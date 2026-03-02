@@ -1285,8 +1285,10 @@ class SequenceGame {
         const ui = this.ui;
         if (!ui.board) return;
 
-        // Preserve the SVG if it exists
+        // Preserve the SVG and Wipe UI if they exist inside the board
         const svg = ui.seqLines || document.getElementById('sequence-lines');
+        const wipeTarget = ui.wipeTargetContainer || document.getElementById('wipe-target-container');
+        const wipeAction = ui.wipeActionPanel || document.getElementById('wipe-action-panel');
 
         if (!forceFullRedraw && !animateEntrance && ui.board.querySelectorAll('.cell').length === 100) {
             this.syncBoardState();
@@ -1295,6 +1297,8 @@ class SequenceGame {
 
         ui.board.innerHTML = '';
         if (svg) ui.board.appendChild(svg);
+        if (wipeTarget) ui.board.appendChild(wipeTarget);
+        if (wipeAction) ui.board.appendChild(wipeAction);
 
         for (let r = 0; r < 10; r++) {
             for (let c = 0; c < 10; c++) {
@@ -1355,7 +1359,15 @@ class SequenceGame {
 
         const currentJackMode = this.hoverJackMode || this.jackMode;
         if (currentJackMode === 'one-eye' && chip && chip !== this.myColor && !this.isChipInSequence(r, c)) highlight = ' highlight-remove';
-        if (currentJackMode === 'two-eye' && !chip && val !== 'FREE') highlight = ' highlight-place';
+
+        if (currentJackMode === 'two-eye' && !chip && val !== 'FREE') {
+            if (this.wipeEnabled && this.selectedCards && this.selectedCards.length === 2) {
+                // Suppress placement hints when ready to wipe
+                highlight = '';
+            } else {
+                highlight = ' highlight-place';
+            }
+        }
 
         if (this.hintsEnabled && !currentJackMode) {
             const selectedCard = this.selectedCardIndex !== null ? this.hand[this.selectedCardIndex] : null;
@@ -1748,15 +1760,31 @@ class SequenceGame {
         // 10 Rows (left side)
         for (let r = 0; r < 10; r++) {
             ui.wipeTargetContainer.appendChild(createArrow('row', r, {
-                left: '-40px',
-                top: `calc(${r * 10}% + 5% - 15px)` // center in cell height
+                left: '-20px', // slightly inward so it doesn't clip on mobile
+                top: `calc(${r * 10}% + 5% - 12px)`, // center horizontally on cell row
+                width: '24px',
+                height: '24px',
+                borderRadius: '50%',
+                padding: '0',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '0.8rem'
             }));
         }
         // 10 Columns (top side)
         for (let c = 0; c < 10; c++) {
             ui.wipeTargetContainer.appendChild(createArrow('col', c, {
-                top: '-35px',
-                left: `calc(${c * 10}% + 5% - 20px)`
+                top: '-25px', // slightly inward
+                left: `calc(${c * 10}% + 5% - 12px)`, // center vertically on cell col
+                width: '24px',
+                height: '24px',
+                borderRadius: '50%',
+                padding: '0',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '0.8rem'
             }));
         }
     }
@@ -1771,7 +1799,7 @@ class SequenceGame {
     }
 
     executeWipe(axis, index) {
-        this.exitWipeSelectionMode();
+        // We cannot call exitWipeSelectionMode here because it clears this.wipeHandIndices!
 
         // Discard the cards used
         let drawnCards = [];
@@ -1826,6 +1854,7 @@ class SequenceGame {
         this.updateTurnUI();
         this.updateJackHint();
         ui.wipeActionPanel.style.display = 'none';
+        this.exitWipeSelectionMode();
 
         // Animate locally
         this.animateAndApplyWipe(axis, index, () => {

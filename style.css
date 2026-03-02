@@ -1447,12 +1447,15 @@ input[type="checkbox"]#wipe-toggle:checked+.toggle-switch::after {
 }
 
 .wipe-cancel-btn {
-    background: #333;
     padding: 10px 15px;
+    font-size: 1.2rem;
+    border-radius: 8px;
+    /* transition: background 0.2s; */
 }
 
+/* Hover effects for custom buttons */
 .wipe-cancel-btn:hover {
-    background: #555;
+    transform: scale(1.05);
 }
 
 .wipe-trigger-btn {
