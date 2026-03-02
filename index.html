@@ -80,7 +80,8 @@
                                         <span class="toggle-switch"></span>
                                         <span class="toggle-label">Show Board Hints</span>
                                     </label>
-                                    <label class="hint-toggle" style="justify-content: center; width: 100%;">
+                                    <label class="hint-toggle"
+                                        style="justify-content: center; width: 100%; display: none;">
                                         <input type="checkbox" id="wipe-toggle">
                                         <span class="toggle-switch"></span>
                                         <span class="toggle-label">Enable "The Wipe"</span>
@@ -146,7 +147,8 @@
                             <li><strong>Two-Eyed vs One-Eyed Jacks:</strong> One-Eyed Jacks are anti-wild and can be
                                 used to remove an opponent's chip from the board. Two-Eyed Jacks are wild cards and
                                 can be used to place a chip anywhere on the board.</li>
-                            <li><strong>"The Wipe":</strong> A game-changing power that clears an entire row or column.
+                            <li style="display:none;"><strong>"The Wipe":</strong> A game-changing power that clears an
+                                entire row or column.
                                 Trigger it by selecting <strong>two Two-Eyed Jacks</strong> at once and clicking the
                                 "Trigger Wipe" button.
                                 Target any line to clear all chips, regardless of ownership.</li>
@@ -171,7 +173,7 @@
                                     surrounding paths.</li>
                             </ul>
                         </div>
-                        <div class="strategy-item">
+                        <div class="strategy-item" style="display:none;">
                             <h3>The Wipe: Tactical Destruction</h3>
                             <p>Properly timing <strong>The Wipe</strong> can turn a guaranteed loss into a winning
                                 opening.</p>
