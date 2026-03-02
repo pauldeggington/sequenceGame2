@@ -570,8 +570,32 @@ body {
 }
 
 @media (max-width: 1200px) {
+    body {
+        overflow-y: auto;
+        height: auto;
+    }
+
+    #global-layout {
+        overflow-y: auto;
+        height: auto;
+        min-height: 100dvh;
+        display: block;
+        /* Break flex on mobile to prevent sidebar push */
+    }
+
+    .sidebar-wrapper {
+        display: block;
+        /* Stack on mobile */
+        width: 100%;
+    }
+
     .sidebar {
         display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
     }
 
     .mobile-ad {
@@ -1255,36 +1279,7 @@ header h1 {
    MOBILE RESPONSIVE
    ══════════════════════════════════════════ */
 @media (max-width: 768px) {
-    body {
-        overflow-y: auto;
-        height: auto;
-    }
-
-    #global-layout {
-        overflow-y: auto;
-        height: auto;
-        min-height: 100dvh;
-        display: block;
-        /* Break flex on mobile to prevent sidebar push */
-    }
-
-    .sidebar-wrapper {
-        display: block;
-        /* Stack on mobile */
-        width: 100%;
-    }
-
-    .sidebar {
-        display: none !important;
-        width: 0 !important;
-        height: 0 !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        border: none !important;
-    }
-
     .setup-split {
-
         flex-direction: column;
         align-items: center;
     }
