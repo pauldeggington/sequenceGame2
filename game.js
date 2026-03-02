@@ -128,6 +128,7 @@ class SequenceGame {
             wipeTargetContainer: document.getElementById('wipe-target-container'),
             wipeActionPanel: document.getElementById('wipe-action-panel'),
             wipeActionBtn: document.getElementById('wipe-action-btn'),
+            wipeCancelBtn: document.getElementById('wipe-cancel-btn'),
             wipeToggle: document.getElementById('wipe-toggle')
         };
 
@@ -1491,12 +1492,23 @@ class SequenceGame {
                     this.jackMode = 'two-eye';
 
                     if (this.wipeEnabled) {
-                        ui.wipeActionPanel.style.display = this.selectedCards.length === 2 ? 'block' : 'none';
+                        ui.wipeActionPanel.style.display = this.selectedCards.length === 2 ? 'flex' : 'none';
                         if (this.selectedCards.length === 2) {
                             ui.wipeActionBtn.onclick = (e) => {
                                 e.stopPropagation();
+                                ui.wipeActionPanel.style.display = 'none'; // Hide overlay before entering select mode
                                 this.enterWipeSelectionMode(this.selectedCards);
                             };
+                            if (ui.wipeCancelBtn) {
+                                ui.wipeCancelBtn.onclick = (e) => {
+                                    e.stopPropagation();
+                                    this.selectedCards = null;
+                                    this.selectedCardIndex = null;
+                                    ui.wipeActionPanel.style.display = 'none';
+                                    this.renderHand();
+                                    this.updateJackHint();
+                                };
+                            }
                         }
                     } else {
                         ui.wipeActionPanel.style.display = 'none';
@@ -1508,7 +1520,7 @@ class SequenceGame {
                     return;
                 } else {
                     // Reset multi-select if a normal card is clicked
-                    this.selectedCards = [index];
+                    this.selectedCards = null;
                     ui.wipeActionPanel.style.display = 'none';
                 }
 
