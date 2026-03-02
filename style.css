@@ -589,6 +589,12 @@ body {
         width: 100%;
     }
 
+    #game-container {
+        height: auto;
+        overflow: visible;
+        /* Allow inner contents to push down without clipping */
+    }
+
     .sidebar {
         display: none !important;
         width: 0 !important;
