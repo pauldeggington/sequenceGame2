@@ -225,9 +225,12 @@
                             </div>
 
                             <div id="hand-panel">
-                                <div id="jack-hint" class="jack-hint-panel" style="display:none"></div>
-                                <div id="dead-hint" class="jack-hint-panel"
-                                    style="display:none; background: rgba(150, 150, 150, 0.15); border-color: rgba(150, 150, 150, 0.4); color: #ccc;">
+                                <div style="display: grid; place-items: center;">
+                                    <div id="jack-hint" class="jack-hint-panel"
+                                        style="visibility:hidden; grid-area: 1/1; width: 100%;"></div>
+                                    <div id="dead-hint" class="jack-hint-panel"
+                                        style="visibility:hidden; grid-area: 1/1; width: 100%; background: rgba(150, 150, 150, 0.15); border-color: rgba(150, 150, 150, 0.4); color: #ccc;">
+                                    </div>
                                 </div>
                                 <div id="player-hand" class="hand"></div>
                             </div>

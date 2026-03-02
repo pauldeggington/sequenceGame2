@@ -1529,21 +1529,21 @@ class SequenceGame {
         // Jack hints
         if (this.jackMode === 'one-eye') {
             ui.jackHint.innerText = "👁 One-Eyed Jack: Click an opponent's chip to remove it.";
-            ui.jackHint.style.display = 'block';
+            ui.jackHint.style.visibility = 'visible';
         } else if (this.jackMode === 'two-eye') {
             ui.jackHint.innerText = "👁👁 Two-Eyed Jack: Click any empty cell to place your chip.";
-            ui.jackHint.style.display = 'block';
+            ui.jackHint.style.visibility = 'visible';
         } else {
-            ui.jackHint.style.display = 'none';
+            ui.jackHint.style.visibility = 'hidden';
         }
 
         // Dead card hints
         if (ui.deadHint) {
             if (this.selectedIsDead && this.currentTurn === this.myColor) {
                 ui.deadHint.innerText = "💀 Dead Card: Click to exchange for a new one.";
-                ui.deadHint.style.display = 'block';
+                ui.deadHint.style.visibility = 'visible';
             } else {
-                ui.deadHint.style.display = 'none';
+                ui.deadHint.style.visibility = 'hidden';
             }
         }
     }
@@ -1559,22 +1559,22 @@ class SequenceGame {
 
         if (isOneEye) {
             ui.jackHint.innerText = "👁 One-Eyed Jack: Click an opponent's chip to remove it.";
-            ui.jackHint.style.display = 'block';
-            ui.deadHint.style.display = 'none';
+            ui.jackHint.style.visibility = 'visible';
+            ui.deadHint.style.visibility = 'hidden';
         } else if (isTwoEye) {
             ui.jackHint.innerText = "👁👁 Two-Eyed Jack: Click any empty cell to place your chip.";
-            ui.jackHint.style.display = 'block';
-            ui.deadHint.style.display = 'none';
+            ui.jackHint.style.visibility = 'visible';
+            ui.deadHint.style.visibility = 'hidden';
         } else {
-            ui.jackHint.style.display = 'none';
+            ui.jackHint.style.visibility = 'hidden';
         }
 
         if (isDead) {
             ui.deadHint.innerText = "💀 Dead Card: Click to exchange for a new one.";
-            ui.deadHint.style.display = 'block';
-            ui.jackHint.style.display = 'none';
+            ui.deadHint.style.visibility = 'visible';
+            ui.jackHint.style.visibility = 'hidden';
         } else if (!isOneEye && !isTwoEye) {
-            ui.deadHint.style.display = 'none';
+            ui.deadHint.style.visibility = 'hidden';
         }
     }
 
