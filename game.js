@@ -127,7 +127,8 @@ class SequenceGame {
             deadHint: document.getElementById('dead-hint'),
             wipeTargetContainer: document.getElementById('wipe-target-container'),
             wipeActionPanel: document.getElementById('wipe-action-panel'),
-            wipeActionBtn: document.getElementById('wipe-action-btn')
+            wipeActionBtn: document.getElementById('wipe-action-btn'),
+            wipeToggle: document.getElementById('wipe-toggle')
         };
 
         this.peer = null;
@@ -140,6 +141,7 @@ class SequenceGame {
         this.sequences = { red: 0, blue: 0, green: 0 };
         this.jackMode = null;
         this.teamCount = 2;
+        this.wipeEnabled = false;
         this.peers = [];         // connected peer IDs
         this.allPeers = [];      // full peer list including self (for rank calc)
         this.myPeerId = null;    // stable local peer ID
@@ -277,6 +279,14 @@ class SequenceGame {
             hintsToggle.onchange = () => {
                 this.hintsEnabled = hintsToggle.checked;
                 this.broadcast('config', { hintsEnabled: this.hintsEnabled });
+            };
+        }
+
+        // Wipe toggle
+        if (this.ui.wipeToggle) {
+            this.ui.wipeToggle.onchange = () => {
+                this.wipeEnabled = this.ui.wipeToggle.checked;
+                this.broadcast('config', { wipeEnabled: this.wipeEnabled });
             };
         }
 
@@ -601,6 +611,10 @@ class SequenceGame {
                 const toggle = document.getElementById('show-hints-toggle');
                 if (toggle) toggle.checked = this.hintsEnabled;
             }
+            if (data.wipeEnabled !== undefined) {
+                this.wipeEnabled = data.wipeEnabled;
+                if (this.ui.wipeToggle) this.ui.wipeToggle.checked = this.wipeEnabled;
+            }
             if (data.boardLayoutMode !== undefined) {
                 this.boardLayoutMode = data.boardLayoutMode;
                 if (this.updateLayoutUI) this.updateLayoutUI(this.boardLayoutMode);
@@ -612,6 +626,7 @@ class SequenceGame {
                 document.querySelectorAll('.team-btn').forEach(b => b.style.pointerEvents = 'none');
                 const toggle = document.getElementById('show-hints-toggle');
                 if (toggle) toggle.disabled = true;
+                if (this.ui.wipeToggle) this.ui.wipeToggle.disabled = true;
                 if (this.ui.layoutDefaultBtn) this.ui.layoutDefaultBtn.disabled = true;
                 if (this.ui.layoutRandomBtn) this.ui.layoutRandomBtn.disabled = true;
             }
@@ -633,6 +648,7 @@ class SequenceGame {
             this.winTarget = data.winTarget || (this.teamCount === 3 ? 1 : 2);
             this.colorNames = data.colorNames || {};
             this.hintsEnabled = data.hintsEnabled || false;
+            this.wipeEnabled = data.wipeEnabled !== undefined ? data.wipeEnabled : false;
             this.boardLayoutMode = data.boardLayoutMode || 'default';
             this.board = data.board || BOARD_LAYOUT;
             this.started = true;
@@ -1147,6 +1163,7 @@ class SequenceGame {
                     winTarget: this.winTarget,
                     colorNames: this.colorNames,
                     hintsEnabled: this.hintsEnabled,
+                    wipeEnabled: this.wipeEnabled,
                     boardLayoutMode: this.boardLayoutMode,
                     board: this.board,
                     lastMove: this.lastMove
@@ -1474,12 +1491,18 @@ class SequenceGame {
                     }
 
                     this.jackMode = 'two-eye';
-                    ui.wipeActionPanel.style.display = this.selectedCards.length === 2 ? 'block' : 'none';
-                    if (this.selectedCards.length === 2) {
-                        ui.wipeActionBtn.onclick = () => {
-                            this.enterWipeSelectionMode(this.selectedCards);
-                        };
+
+                    if (this.wipeEnabled) {
+                        ui.wipeActionPanel.style.display = this.selectedCards.length === 2 ? 'block' : 'none';
+                        if (this.selectedCards.length === 2) {
+                            ui.wipeActionBtn.onclick = () => {
+                                this.enterWipeSelectionMode(this.selectedCards);
+                            };
+                        }
+                    } else {
+                        ui.wipeActionPanel.style.display = 'none';
                     }
+
                     this.renderHand();
                     this.renderBoard();
                     this.updateJackHint();
@@ -1623,7 +1646,7 @@ class SequenceGame {
             ui.jackHint.style.visibility = 'visible';
             ui.deadHint.style.visibility = 'hidden';
         } else if (isTwoEye) {
-            if (this.selectedCards && this.selectedCards.length === 2) {
+            if (this.wipeEnabled && this.selectedCards && this.selectedCards.length === 2) {
                 ui.jackHint.innerText = "💥 2x Two-Eyed Jacks: Trigger The Wipe or place a single chip.";
             } else {
                 ui.jackHint.innerText = "👁👁 Two-Eyed Jack: Click any empty cell to place your chip.";
@@ -2094,6 +2117,7 @@ class SequenceGame {
             teamCount: this.teamCount,
             winTarget: this.winTarget,
             hintsEnabled: this.hintsEnabled,
+            wipeEnabled: this.wipeEnabled,
             boardLayoutMode: this.boardLayoutMode,
             board: this.board,
             started: this.started,
