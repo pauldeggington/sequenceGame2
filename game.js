@@ -1493,7 +1493,8 @@ class SequenceGame {
                     if (this.wipeEnabled) {
                         ui.wipeActionPanel.style.display = this.selectedCards.length === 2 ? 'block' : 'none';
                         if (this.selectedCards.length === 2) {
-                            ui.wipeActionBtn.onclick = () => {
+                            ui.wipeActionBtn.onclick = (e) => {
+                                e.stopPropagation();
                                 this.enterWipeSelectionMode(this.selectedCards);
                             };
                         }
@@ -1602,6 +1603,7 @@ class SequenceGame {
     updateJackHint() {
         const ui = this.ui;
         if (!ui.jackHint) return;
+        if (this.wipeSelectionMode) return; // Wait for target selection to end
 
         // Jack & Joker hints
         if (this.jackMode === 'one-eye') {
@@ -1690,11 +1692,14 @@ class SequenceGame {
         backdrop.style.position = 'absolute';
         backdrop.style.inset = '-20px'; // expand beyond board
         backdrop.style.zIndex = '5';
-        backdrop.style.pointerEvents = 'auto';
-        backdrop.onclick = () => this.exitWipeSelectionMode();
+        backdrop.style.pointerEvents = 'auto'; // Block beneath clicks from firing handleCellClick
+        backdrop.onpointerdown = (e) => {
+            e.stopPropagation();
+            this.exitWipeSelectionMode();
+        };
         ui.wipeTargetContainer.appendChild(backdrop);
 
-        ui.jackHint.innerText = "💥 WIPE MODE: Select a row or column arrow to destroy it. Click anywhere else to cancel.";
+        ui.jackHint.innerText = "💥 WIPE MODE: Select a target red arrow on the board border to destroy that line. Click anywhere else to cancel.";
         ui.jackHint.style.visibility = 'visible';
 
         // Generate Arrows
@@ -1870,6 +1875,11 @@ class SequenceGame {
     // MOVE HANDLING
     // ══════════════════════════════════════
     handleCellClick(r, c) {
+        if (this.wipeSelectionMode) {
+            this.exitWipeSelectionMode();
+            return;
+        }
+
         if (this.currentTurn !== this.myColor) return;
         if (this.selectedCardIndex === null) return;
 
