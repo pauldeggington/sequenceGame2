@@ -2079,8 +2079,26 @@ class SequenceGame {
             this.log(`🏆 ${winner} wins!`);
             this.showWinPopup(winner);
         } else {
-            // Only show sequence popups if no one has won yet
-            newlyFormed.forEach(color => this.showSequencePopup(color));
+            // Check for Cat's Game (Board Full)
+            let isFull = true;
+            for (let r = 0; r < 10; r++) {
+                for (let c = 0; c < 10; c++) {
+                    if (this.board[r][c] !== 'FREE' && !this.chips[r][c]) {
+                        isFull = false;
+                        break;
+                    }
+                }
+                if (!isFull) break;
+            }
+
+            if (isFull) {
+                this.currentTurn = null;
+                this.log("🤝 Cat's Game! The board is full.");
+                this.showWinPopup('CATS');
+            } else {
+                // Only show sequence popups if no one has won and board is not full
+                newlyFormed.forEach(color => this.showSequencePopup(color));
+            }
         }
 
         if (updated && this.sendSync) {
@@ -2473,12 +2491,24 @@ class SequenceGame {
     showWinPopup(winner) {
         const ui = this.ui;
         if (ui.gameOverOverlay && ui.winnerDisplay) {
-            const teamColor = winner.toLowerCase();
-            const colorHex = teamColor === 'red' ? '#ff7675' : (teamColor === 'blue' ? '#74b9ff' : '#55efc4');
+            if (winner === 'CATS') {
+                ui.winnerDisplay.innerText = "CAT'S GAME!";
+                ui.winnerDisplay.style.color = "#ecf0f1";
+                ui.winnerDisplay.style.textShadow = `0 0 30px rgba(255,255,255,0.5), 0 4px 20px rgba(0,0,0,0.5)`;
+                if (document.getElementById('win-subtitle')) {
+                    document.getElementById('win-subtitle').innerText = "The board is full! It's a draw.";
+                }
+            } else {
+                const teamColor = winner.toLowerCase();
+                const colorHex = teamColor === 'red' ? '#ff7675' : (teamColor === 'blue' ? '#74b9ff' : '#55efc4');
 
-            ui.winnerDisplay.innerText = `${winner.toUpperCase()} TEAM WINS!`;
-            ui.winnerDisplay.style.color = colorHex;
-            ui.winnerDisplay.style.textShadow = `0 0 30px ${colorHex}99, 0 4px 20px rgba(0,0,0,0.5)`;
+                ui.winnerDisplay.innerText = `${winner.toUpperCase()} TEAM WINS!`;
+                ui.winnerDisplay.style.color = colorHex;
+                ui.winnerDisplay.style.textShadow = `0 0 30px ${colorHex}99, 0 4px 20px rgba(0,0,0,0.5)`;
+                if (document.getElementById('win-subtitle')) {
+                    document.getElementById('win-subtitle').innerText = "Congratulations!";
+                }
+            }
 
             ui.gameOverOverlay.style.display = 'flex';
         }
