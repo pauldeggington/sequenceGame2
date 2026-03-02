@@ -1267,8 +1267,6 @@ class SequenceGame {
                 for (const rank of ranks)
                     deck.push(rank + suit);
 
-        // Add 4 Jokers for The Wipe
-        deck.push('JOK1', 'JOK2', 'JOK3', 'JOK4');
         return deck;
     }
 
