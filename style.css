@@ -1430,6 +1430,36 @@ input[type="checkbox"]#wipe-toggle:checked+.toggle-switch::after {
     color: var(--text);
 }
 
+/* Wipe Overlay Panel */
+.wipe-overlay-panel {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 20;
+    display: flex;
+    gap: 10px;
+    background: rgba(13, 27, 30, 0.9);
+    padding: 15px;
+    border-radius: 12px;
+    border: 2px solid #e74c3c;
+    box-shadow: 0 10px 40px rgba(231, 76, 60, 0.4);
+}
+
+.wipe-cancel-btn {
+    background: #333;
+    padding: 10px 15px;
+}
+
+.wipe-cancel-btn:hover {
+    background: #555;
+}
+
+.wipe-trigger-btn {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+}
+
 /* Win Popup Styles */
 .win-popup-overlay {
     position: fixed;
