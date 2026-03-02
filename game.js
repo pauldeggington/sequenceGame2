@@ -79,6 +79,7 @@ function genId(len = 8) {
 class SequenceGame {
     constructor() {
         this.board = BOARD_LAYOUT;
+        this.boardLayoutMode = 'default';
         this.chips = Array(10).fill(null).map(() => Array(10).fill(null));
         this.playerID = localStorage.getItem('sequence_playerID') || genId(12);
         localStorage.setItem('sequence_playerID', this.playerID);
@@ -99,6 +100,8 @@ class SequenceGame {
             playersEl: document.getElementById('players-connected'),
             startBtn: document.getElementById('start-game-btn'),
             waitMsg: document.getElementById('waiting-msg'),
+            layoutDefaultBtn: document.getElementById('layout-default-btn'),
+            layoutRandomBtn: document.getElementById('layout-random-btn'),
             board: document.getElementById('game-board'),
             hand: document.getElementById('player-hand'),
             logContent: document.getElementById('log-content'),
@@ -270,6 +273,28 @@ class SequenceGame {
             };
         }
 
+        // Board Layout Buttons
+        const updateLayoutUI = (mode) => {
+            this.boardLayoutMode = mode;
+            if (this.ui.layoutDefaultBtn) this.ui.layoutDefaultBtn.classList.toggle('selected', mode === 'default');
+            if (this.ui.layoutRandomBtn) this.ui.layoutRandomBtn.classList.toggle('selected', mode === 'random');
+        };
+
+        if (this.ui.layoutDefaultBtn) {
+            this.ui.layoutDefaultBtn.onclick = () => {
+                updateLayoutUI('default');
+                this.broadcast('config', { boardLayoutMode: 'default' });
+            };
+        }
+        if (this.ui.layoutRandomBtn) {
+            this.ui.layoutRandomBtn.onclick = () => {
+                updateLayoutUI('random');
+                this.broadcast('config', { boardLayoutMode: 'random' });
+            };
+        }
+
+        this.updateLayoutUI = updateLayoutUI;
+
         let roomId = window.location.hash.substring(1);
         const savedRoomId = localStorage.getItem('sequence_roomID');
         const savedIsHost = localStorage.getItem('sequence_isHost');
@@ -323,6 +348,9 @@ class SequenceGame {
 
                 // Allow team selection for 1v1 or 1v1v1
                 this.updateTeamLabels(ui.teamLabels);
+
+                if (this.ui.layoutDefaultBtn) this.ui.layoutDefaultBtn.disabled = false;
+                if (this.ui.layoutRandomBtn) this.ui.layoutRandomBtn.disabled = false;
             };
         }
 
@@ -379,6 +407,8 @@ class SequenceGame {
                     this.teamCount = s.teamCount;
                     this.winTarget = s.winTarget;
                     this.hintsEnabled = s.hintsEnabled;
+                    this.boardLayoutMode = s.boardLayoutMode || 'default';
+                    this.board = s.board || BOARD_LAYOUT;
                     this.started = s.started;
                     this.lastMove = s.lastMove || null;
                     this.sequenceGrid = s.sequenceGrid || Array(10).fill(null).map(() => Array(10).fill(false));
@@ -523,6 +553,8 @@ class SequenceGame {
                         winTarget: this.winTarget,
                         colorNames: this.colorNames,
                         hintsEnabled: this.hintsEnabled,
+                        boardLayoutMode: this.boardLayoutMode,
+                        board: this.board,
                         boardChips: this.chips,
                         sequences: this.sequences,
                         sequenceGrid: this.sequenceGrid,
@@ -562,9 +594,19 @@ class SequenceGame {
                 const toggle = document.getElementById('show-hints-toggle');
                 if (toggle) toggle.checked = this.hintsEnabled;
             }
+            if (data.boardLayoutMode !== undefined) {
+                this.boardLayoutMode = data.boardLayoutMode;
+                if (this.updateLayoutUI) this.updateLayoutUI(this.boardLayoutMode);
+            }
             if (ui) {
                 ui.teamCfg.style.display = 'block';
                 ui.playerList.style.display = 'block';
+                // Disable inputs for peers
+                document.querySelectorAll('.team-btn').forEach(b => b.style.pointerEvents = 'none');
+                const toggle = document.getElementById('show-hints-toggle');
+                if (toggle) toggle.disabled = true;
+                if (this.ui.layoutDefaultBtn) this.ui.layoutDefaultBtn.disabled = true;
+                if (this.ui.layoutRandomBtn) this.ui.layoutRandomBtn.disabled = true;
             }
         } else if (type === 'gameStart') {
             this.chips = Array(10).fill(null).map(() => Array(10).fill(null));
@@ -584,6 +626,8 @@ class SequenceGame {
             this.winTarget = data.winTarget || (this.teamCount === 3 ? 1 : 2);
             this.colorNames = data.colorNames || {};
             this.hintsEnabled = data.hintsEnabled || false;
+            this.boardLayoutMode = data.boardLayoutMode || 'default';
+            this.board = data.board || BOARD_LAYOUT;
             this.started = true;
             this.showGameScreen();
 
@@ -879,7 +923,7 @@ class SequenceGame {
                     ui.startBtn.style.display = 'block';
                 }
 
-                this.sendTo(conn.peer, 'config', { teamCount: this.teamCount, hintsEnabled: this.hintsEnabled });
+                this.sendTo(conn.peer, 'config', { teamCount: this.teamCount, hintsEnabled: this.hintsEnabled, boardLayoutMode: this.boardLayoutMode });
                 if (this.myName) {
                     this.sendTo(conn.peer, 'name', this.myName);
                 }
@@ -1010,6 +1054,16 @@ class SequenceGame {
             return;
         }
 
+        if (this.isHost && this.ui) {
+            // Already updated via button clicks
+        }
+
+        if (this.boardLayoutMode === 'random') {
+            this.board = this.generateRandomBoard();
+        } else {
+            this.board = BOARD_LAYOUT;
+        }
+
         this.deck = this.createDeck();
         this.shuffle(this.deck);
 
@@ -1086,6 +1140,8 @@ class SequenceGame {
                     winTarget: this.winTarget,
                     colorNames: this.colorNames,
                     hintsEnabled: this.hintsEnabled,
+                    boardLayoutMode: this.boardLayoutMode,
+                    board: this.board,
                     lastMove: this.lastMove
                 }, a.peerId);
             }
@@ -1130,6 +1186,33 @@ class SequenceGame {
         this.log(`🎨 ${this.myName || 'Player'} on team ${this.myColor.toUpperCase()}`);
         this.log(`🃏 Cards dealt! ${this.currentTurn} goes first.`);
         this.redrawSequenceLines();
+    }
+
+    generateRandomBoard() {
+        const suits = ['H', 'D', 'S', 'C'];
+        const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'Q', 'K', 'A'];
+        const spots = [];
+        for (let i = 0; i < 2; i++) {
+            for (const suit of suits) {
+                for (const rank of ranks) {
+                    spots.push(rank + suit);
+                }
+            }
+        }
+        this.shuffle(spots);
+
+        const newBoard = Array(10).fill(null).map(() => Array(10).fill(null));
+        let spotIdx = 0;
+        for (let r = 0; r < 10; r++) {
+            for (let c = 0; c < 10; c++) {
+                if ((r === 0 && c === 0) || (r === 0 && c === 9) || (r === 9 && c === 0) || (r === 9 && c === 9)) {
+                    newBoard[r][c] = 'FREE';
+                } else {
+                    newBoard[r][c] = spots[spotIdx++];
+                }
+            }
+        }
+        return newBoard;
     }
 
     initGameElements() {
@@ -1699,6 +1782,8 @@ class SequenceGame {
             teamCount: this.teamCount,
             winTarget: this.winTarget,
             hintsEnabled: this.hintsEnabled,
+            boardLayoutMode: this.boardLayoutMode,
+            board: this.board,
             started: this.started,
             lastMove: this.lastMove,
             sequenceGrid: this.sequenceGrid,

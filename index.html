@@ -60,19 +60,30 @@
 
                             <div id="team-config" class="setup-section" style="display:none">
                                 <h3>Game Options</h3>
-                                <div class="options-row">
-                                    <label class="hint-toggle">
+                                <div class="options-row"
+                                    style="display: flex; flex-direction: column; gap: 15px; align-items: center; width: 100%;">
+                                    <label class="hint-toggle" style="justify-content: center; width: 100%;">
                                         <input type="checkbox" id="show-hints-toggle">
                                         <span class="toggle-switch"></span>
                                         <span class="toggle-label">Show Board Hints</span>
                                     </label>
+                                    <div class="layout-select-container"
+                                        style="display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%;">
+                                        <span class="toggle-label">Board Layout</span>
+                                        <div class="team-buttons" id="layout-buttons">
+                                            <button class="team-btn selected" id="layout-default-btn"
+                                                data-mode="default">Default</button>
+                                            <button class="team-btn" id="layout-random-btn"
+                                                data-mode="random">Randomized</button>
+                                        </div>
+                                    </div>
                                 </div>
-                                <h3>Teams</h3>
+                                <h3 style="text-align: center; width: 100%;">Teams</h3>
                                 <div class="team-buttons">
                                     <button class="team-btn selected" data-teams="2">2 Teams</button>
                                     <button class="team-btn" data-teams="3">3 Teams</button>
                                 </div>
-                                <div id="team-labels" class="team-labels">
+                                <div id="team-labels" class="team-labels" style="justify-content: center;">
                                     <span class="team-tag red">🔴 Red</span>
                                     <span class="team-tag blue">🔵 Blue</span>
                                 </div>
@@ -203,7 +214,8 @@
                             <!-- ══════════ EMOJI PICKER ══════════ -->
                             <div id="emoji-picker-container">
                                 <button id="emoji-trigger" class="glass-panel">😊</button>
-                                <div id="emoji-menu" class="glass-panel" style="display:none">
+                                <div id="emoji-menu"
+                                    style="display:none; position: absolute; bottom: 60px; right: 0; width: 160px; padding: 12px; border-radius: 12px; background: rgba(13, 27, 30, 0.98); border: 1px solid var(--gold); box-shadow: 0 8px 32px rgba(0,0,0,0.8); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 10000;">
                                     <div class="emoji-grid">
                                         <span class="emoji-opt">👏</span>
                                         <span class="emoji-opt">🔥</span>

@@ -1317,6 +1317,13 @@ header h1 {
     #emoji-picker-container {
         flex: 0 0 20%;
     }
+
+    #emoji-menu {
+        right: 0px !important;
+        left: auto !important;
+        bottom: 60px !important;
+        width: 160px !important;
+    }
 }
 
 /* Options/Toggle Styles */
@@ -1497,17 +1504,17 @@ input[type="checkbox"]#show-hints-toggle:checked+.toggle-switch::after {
 
 #emoji-menu {
     position: absolute;
-    bottom: 55px;
-    /* Added some space above the button */
-    left: 0;
-    width: 100%;
-    /* Take up the same width as the button */
-    padding: 10px 0;
+    bottom: 60px;
+    right: 0;
+    width: 160px;
+    padding: 12px;
     border-radius: 12px;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    backdrop-filter: none !important;
+    background: rgba(13, 27, 30, 0.95);
+    border: 1px solid var(--gold);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 10000;
 }
 
 .emoji-grid {
