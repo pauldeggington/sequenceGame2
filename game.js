@@ -54,6 +54,8 @@ const MAX_RECONNECT_ATTEMPTS = 60; // ~5 minutes of attempts
 
 function getCardImagePath(card) {
     if (card === 'FREE') return 'card_images/back_light.png';
+    if (card.startsWith('JOK')) return 'card_images/joker.png'; // Fallback handled in CSS if missing
+
     const rank = card.slice(0, -1);
     const suit = card.slice(-1);
     const suitMap = { 'H': 'hearts', 'D': 'diamonds', 'S': 'spades', 'C': 'clubs' };
@@ -122,7 +124,10 @@ class SequenceGame {
             emojiMenu: document.getElementById('emoji-menu'),
             emojiFloatContainer: document.getElementById('emoji-float-container'),
             jackHint: document.getElementById('jack-hint'),
-            deadHint: document.getElementById('dead-hint')
+            deadHint: document.getElementById('dead-hint'),
+            wipeTargetContainer: document.getElementById('wipe-target-container'),
+            wipeActionPanel: document.getElementById('wipe-action-panel'),
+            wipeActionBtn: document.getElementById('wipe-action-btn')
         };
 
         this.peer = null;
@@ -1244,6 +1249,9 @@ class SequenceGame {
             for (const suit of suits)
                 for (const rank of ranks)
                     deck.push(rank + suit);
+
+        // Add 4 Jokers for The Wipe
+        deck.push('JOK1', 'JOK2', 'JOK3', 'JOK4');
         return deck;
     }
 
@@ -1401,7 +1409,7 @@ class SequenceGame {
 
             cardEl.className = [
                 'card',
-                this.selectedCardIndex === index ? 'selected' : '',
+                (this.selectedCardIndex === index || (this.selectedCards && this.selectedCards.includes(index))) ? 'selected' : '',
                 isOneEye ? 'jack-one-eye' : '',
                 isTwoEye ? 'jack-two-eye' : '',
                 isDead ? 'dead-card' : '',
@@ -1434,6 +1442,53 @@ class SequenceGame {
                 if (this.currentTurn !== this.myColor) return;
                 // prevent selection ghosting/drag
                 if (e.pointerType === 'touch') e.preventDefault();
+                if (this.wipeSelectionMode) return; // Block card clicks while targeting wipe
+
+                // Double Two-Eyed Jack selection
+                if (isTwoEye) {
+                    if (!this.selectedCards) this.selectedCards = [];
+
+                    if (this.selectedCards.includes(index)) {
+                        // Deselect
+                        this.selectedCards = this.selectedCards.filter(i => i !== index);
+                        if (this.selectedCardIndex === index) {
+                            this.selectedCardIndex = this.selectedCards.length > 0 ? this.selectedCards[0] : null;
+                        }
+                    } else {
+                        // Select
+                        if (this.selectedCards.length < 2) {
+                            // Only allow selecting if the previously selected card is also a Two-Eyed Jack
+                            if (this.selectedCards.length === 0 || TWO_EYE.has(this.hand[this.selectedCards[0]])) {
+                                this.selectedCards.push(index);
+                                this.selectedCardIndex = index;
+                            } else {
+                                this.selectedCards = [index];
+                                this.selectedCardIndex = index;
+                            }
+                        } else {
+                            // Replace first selected if already 2
+                            this.selectedCards.shift();
+                            this.selectedCards.push(index);
+                            this.selectedCardIndex = index;
+                        }
+                    }
+
+                    this.jackMode = 'two-eye';
+                    ui.wipeActionPanel.style.display = this.selectedCards.length === 2 ? 'block' : 'none';
+                    if (this.selectedCards.length === 2) {
+                        ui.wipeActionBtn.onclick = () => {
+                            this.enterWipeSelectionMode(this.selectedCards);
+                        };
+                    }
+                    this.renderHand();
+                    this.renderBoard();
+                    this.updateJackHint();
+                    return;
+                } else {
+                    // Reset multi-select if a normal card is clicked
+                    this.selectedCards = [index];
+                    ui.wipeActionPanel.style.display = 'none';
+                }
 
                 // Check if card is dead (no empty spots left on the board)
                 if (!isOneEye && !isTwoEye) {
@@ -1477,6 +1532,7 @@ class SequenceGame {
                         }
 
                         this.selectedCardIndex = null;
+                        this.selectedCards = null;
                         this.jackMode = null;
                         this.renderHand();
                         this.renderBoard();
@@ -1526,13 +1582,15 @@ class SequenceGame {
         const ui = this.ui;
         if (!ui.jackHint) return;
 
-        // Jack hints
+        // Jack & Joker hints
         if (this.jackMode === 'one-eye') {
             ui.jackHint.innerText = "👁 One-Eyed Jack: Click an opponent's chip to remove it.";
             ui.jackHint.style.visibility = 'visible';
         } else if (this.jackMode === 'two-eye') {
             ui.jackHint.innerText = "👁👁 Two-Eyed Jack: Click any empty cell to place your chip.";
             ui.jackHint.style.visibility = 'visible';
+        } else if (this.jackMode === 'joker' || (this.selectedCardIndex !== null && this.hand[this.selectedCardIndex].startsWith('JOK'))) {
+            // Handle Joker hint persisting if selected (not technically a jackMode)
         } else {
             ui.jackHint.style.visibility = 'hidden';
         }
@@ -1557,12 +1615,19 @@ class SequenceGame {
             return;
         }
 
+        // If currently targeting wipe, do not change hint
+        if (this.wipeSelectionMode) return;
+
         if (isOneEye) {
             ui.jackHint.innerText = "👁 One-Eyed Jack: Click an opponent's chip to remove it.";
             ui.jackHint.style.visibility = 'visible';
             ui.deadHint.style.visibility = 'hidden';
         } else if (isTwoEye) {
-            ui.jackHint.innerText = "👁👁 Two-Eyed Jack: Click any empty cell to place your chip.";
+            if (this.selectedCards && this.selectedCards.length === 2) {
+                ui.jackHint.innerText = "💥 2x Two-Eyed Jacks: Trigger The Wipe or place a single chip.";
+            } else {
+                ui.jackHint.innerText = "👁👁 Two-Eyed Jack: Click any empty cell to place your chip.";
+            }
             ui.jackHint.style.visibility = 'visible';
             ui.deadHint.style.visibility = 'hidden';
         } else {
@@ -1588,6 +1653,199 @@ class SequenceGame {
     }
 
     // ══════════════════════════════════════
+    // THE WIPE MECHANICS
+    // ══════════════════════════════════════
+    enterWipeSelectionMode(handIndices) {
+        this.wipeSelectionMode = true;
+        this.wipeHandIndices = Array.isArray(handIndices) ? handIndices : [handIndices];
+
+        const ui = this.ui;
+        ui.wipeActionPanel.style.display = 'none';
+        ui.wipeTargetContainer.style.display = 'block';
+        ui.wipeTargetContainer.innerHTML = ''; // clear old
+
+        // Add an absolute back drop to the general board to catch clicks to cancel
+        const backdrop = document.createElement('div');
+        backdrop.style.position = 'absolute';
+        backdrop.style.inset = '-20px'; // expand beyond board
+        backdrop.style.zIndex = '5';
+        backdrop.style.pointerEvents = 'auto';
+        backdrop.onclick = () => this.exitWipeSelectionMode();
+        ui.wipeTargetContainer.appendChild(backdrop);
+
+        ui.jackHint.innerText = "💥 WIPE MODE: Select a row or column arrow to destroy it. Click anywhere else to cancel.";
+        ui.jackHint.style.visibility = 'visible';
+
+        // Generate Arrows
+        const createArrow = (axis, index, positionStyles) => {
+            const btn = document.createElement('button');
+            btn.className = 'wipe-arrow-btn premium-button';
+            btn.innerHTML = axis === 'row' ? '▶' : '▼';
+            Object.assign(btn.style, positionStyles);
+            btn.style.position = 'absolute';
+            btn.style.zIndex = '6';
+            btn.style.padding = '2px 8px';
+            btn.style.pointerEvents = 'auto'; // allow clicking through container
+
+            btn.onpointerenter = () => {
+                // Hover effect: highlight the row/col
+                for (let i = 0; i < 10; i++) {
+                    const r = axis === 'row' ? index : i;
+                    const c = axis === 'col' ? index : i;
+                    const cell = document.getElementById(`cell-${r}-${c}`);
+                    if (cell) cell.classList.add('wipe-hover');
+                }
+            };
+            btn.onpointerleave = () => {
+                document.querySelectorAll('.wipe-hover').forEach(el => el.classList.remove('wipe-hover'));
+            };
+
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                this.executeWipe(axis, index);
+            };
+            return btn;
+        };
+
+        // 10 Rows (left side)
+        for (let r = 0; r < 10; r++) {
+            ui.wipeTargetContainer.appendChild(createArrow('row', r, {
+                left: '-40px',
+                top: `calc(${r * 10}% + 5% - 15px)` // center in cell height
+            }));
+        }
+        // 10 Columns (top side)
+        for (let c = 0; c < 10; c++) {
+            ui.wipeTargetContainer.appendChild(createArrow('col', c, {
+                top: '-35px',
+                left: `calc(${c * 10}% + 5% - 20px)`
+            }));
+        }
+    }
+
+    exitWipeSelectionMode() {
+        this.wipeSelectionMode = false;
+        this.wipeHandIndices = null;
+        this.ui.wipeTargetContainer.style.display = 'none';
+        this.ui.wipeTargetContainer.innerHTML = '';
+        document.querySelectorAll('.wipe-hover').forEach(el => el.classList.remove('wipe-hover'));
+        this.updateJackHint();
+    }
+
+    executeWipe(axis, index) {
+        this.exitWipeSelectionMode();
+
+        // Discard the cards used
+        let drawnCards = [];
+        // Sort descending so splicing doesn't mess up indices
+        let sortedIndices = [...this.wipeHandIndices].sort((a, b) => b - a);
+
+        // Card name for logs
+        let cardNamesPlayed = sortedIndices.map(idx => {
+            let card = this.hand[idx];
+            return card.slice(0, -1) + SUITS[card.slice(-1)];
+        }).join(" & ");
+
+        sortedIndices.forEach(idx => {
+            const drawn = this.deck.length > 0 ? this.deck.shift() : null;
+            this.hand.splice(idx, 1);
+            if (drawn) {
+                this.hand.push(drawn);
+                drawnCards.push(drawn);
+            }
+        });
+
+        if (this.isHost && this.playerStates[this.playerID]) {
+            this.playerStates[this.playerID].hand = [...this.hand];
+        }
+
+        const colors = TEAM_COLORS.slice(0, this.teamCount);
+        const myIdx = colors.indexOf(this.myColor);
+        const nextTurn = colors[(myIdx + 1) % colors.length];
+
+        const myName = (this.colorNames && this.colorNames[this.myColor]) || this.myColor;
+        this.log(`💥 ${myName} used ${cardNamesPlayed} to WIPE ${axis === 'row' ? 'Row' : 'Col'} ${index + 1}!`);
+
+        // Tell opponents about the wipe before we animate it
+        this.sendMove({
+            axis, index,
+            color: this.myColor,
+            moveType: 'wipe',
+            drewCount: drawnCards.length,
+            nextTurn,
+            cardName: cardNamesPlayed,
+            newHand: this.hand
+        });
+
+        this.selectedCardIndex = null;
+        this.selectedCards = null;
+        this.jackMode = null;
+        this.hoveredCardIndex = null;
+        this.currentTurn = nextTurn;
+        this.newCardIndex = drawnCards.length > 0 ? this.hand.length - 1 : null;
+
+        this.renderHand();
+        this.updateTurnUI();
+        this.updateJackHint();
+        ui.wipeActionPanel.style.display = 'none';
+
+        // Animate locally
+        this.animateAndApplyWipe(axis, index, () => {
+            this.checkAndTriggerAITurn();
+        });
+    }
+
+    animateAndApplyWipe(axis, index, callback) {
+        // Trigger CSS animation down the line
+        let delayCount = 0;
+        for (let i = 0; i < 10; i++) {
+            const r = axis === 'row' ? index : i;
+            const c = axis === 'col' ? index : i;
+            const cell = document.getElementById(`cell-${r}-${c}`);
+            if (cell) {
+                const explosion = document.createElement('div');
+                explosion.className = 'explosion-effect';
+                explosion.style.animationDelay = `${delayCount * 0.05}s`;
+                cell.appendChild(explosion);
+
+                // Also shake the cell
+                cell.style.animation = `wipe-shake 0.3s ease-in-out ${delayCount * 0.05}s`;
+            }
+            delayCount++;
+        }
+
+        // Play sound if we have one? (Assuming no sound assets, just visually wait)
+
+        // Wait for animation to finish then clear the board model
+        setTimeout(() => {
+            for (let i = 0; i < 10; i++) {
+                const r = axis === 'row' ? index : i;
+                const c = axis === 'col' ? index : i;
+
+                // Clear the chip logically
+                this.chips[r][c] = null;
+
+                // Remove the animation elements
+                const cell = document.getElementById(`cell-${r}-${c}`);
+                if (cell) {
+                    const ex = cell.querySelector('.explosion-effect');
+                    if (ex) ex.remove();
+                    cell.style.animation = ''; // remove shake
+                }
+            }
+
+            this.renderBoard();
+            this.checkSequences(); // Recalculate sequences (wipes might break them visually if not locked, but sequences are permanent in score)
+
+            if (this.isHost) {
+                this.saveGameState();
+            }
+            if (callback) callback();
+
+        }, 800); // Wait 800ms for all explosions to finish
+    }
+
+    // ══════════════════════════════════════
     // MOVE HANDLING
     // ══════════════════════════════════════
     handleCellClick(r, c) {
@@ -1600,6 +1858,8 @@ class SequenceGame {
         const chip = this.chips[r][c];
 
         let moveType = null;
+        let wipeAxis = null;
+        let wipeIndex = null;
 
         if (ONE_EYE.has(card)) {
             if (chip && chip !== this.myColor && !this.isChipInSequence(r, c, chip)) {
@@ -1714,6 +1974,20 @@ class SequenceGame {
                     this.deck.shift();
                 }
             }
+        }
+
+        if (moveType === 'wipe') {
+            const { axis, index } = moveData;
+            const name = (this.colorNames && this.colorNames[color]) || color;
+            this.log(`💥 ${name} used ${cardName} to WIPE ${axis === 'row' ? 'Row' : 'Col'} ${index + 1}!`);
+
+            // Replicate hand and animation
+            if (drewCount && !newHand && this.deck.length >= drewCount) {
+                for (let i = 0; i < drewCount; i++) this.deck.shift();
+            }
+
+            this.animateAndApplyWipe(axis, index);
+            return; // Turn continues after animation inside animateAndApplyWipe
         }
 
         if (moveType === 'exchange') {

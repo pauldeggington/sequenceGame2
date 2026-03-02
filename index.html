@@ -138,9 +138,13 @@
                             <li><strong>The Free Corner:</strong> The four corners (★) are "free" spaces. They act
                                 as
                                 wild chips, meaning you only need 4 chips to build a sequence out of a corner.</li>
-                            <li><strong>Two-Eyed vs One-Eyed Jacks</strong> One-Eyed Jacks are antiwild and can be
+                            <li><strong>Two-Eyed vs One-Eyed Jacks:</strong> One-Eyed Jacks are anti-wild and can be
                                 used to remove an opponent's chip from the board. Two-Eyed Jacks are wild cards and
                                 can be used to place a chip anywhere on the board.</li>
+                            <li><strong>"The Wipe":</strong> A game-changing power that clears an entire row or column.
+                                Trigger it by selecting <strong>two Two-Eyed Jacks</strong> at once and clicking the
+                                "Trigger Wipe" button.
+                                Target any line to clear all chips, regardless of ownership.</li>
                         </ul>
                     </div>
 
@@ -160,6 +164,20 @@
                                 <li><strong>Claim Early:</strong> Prioritize playing cards that land near corners or
                                     using Two-Eyed Jacks to secure a corner spot before your opponent can block the
                                     surrounding paths.</li>
+                            </ul>
+                        </div>
+                        <div class="strategy-item">
+                            <h3>The Wipe: Tactical Destruction</h3>
+                            <p>Properly timing <strong>The Wipe</strong> can turn a guaranteed loss into a winning
+                                opening.</p>
+                            <ul class="strategy-list">
+                                <li><strong>Break the Lock:</strong> Use it to clear a row or column where an opponent
+                                    is one chip away from a sequence.</li>
+                                <li><strong>Clear Deadlocks:</strong> If a section of the board is filled with mixed
+                                    chips that serve no one, wipe it to reset the field.</li>
+                                <li><strong>The Ultimate Sacrifice:</strong> Giving up two wild Jacks is a high cost.
+                                    Only trigger it when the destruction of an opponent's progress outweighs the value
+                                    of two free placements.</li>
                             </ul>
                         </div>
                     </div>
@@ -220,6 +238,10 @@
                             <div id="board-container">
                                 <div id="game-board" class="board">
                                     <svg id="sequence-lines" class="sequence-svg"></svg>
+                                    <div id="wipe-target-container"
+                                        style="display:none; position:absolute; inset:0; pointer-events:none; z-index: 10;">
+                                        <!-- Arrows will be injected here during wipe mode -->
+                                    </div>
                                 </div>
                                 <!-- ══════════ EMOJI FLOATS ══════════ -->
                                 <div id="emoji-float-container"></div>
@@ -234,6 +256,13 @@
                                     </div>
                                 </div>
                                 <div id="player-hand" class="hand"></div>
+                            </div>
+
+                            <div id="wipe-action-panel" style="display:none; text-align: center; margin-top: 8px;">
+                                <button id="wipe-action-btn" class="premium-button"
+                                    style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white;">
+                                    💥 Trigger Wipe (Sacrifice 2 Jacks) 💥
+                                </button>
                             </div>
                         </div>
 

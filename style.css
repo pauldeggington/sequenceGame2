@@ -1621,6 +1621,110 @@ input[type="checkbox"]#show-hints-toggle:checked+.toggle-switch::after {
     opacity: 0;
 }
 
+/* ── The Wipe Animations & Styles ── */
+.wipe-arrow-btn {
+    border-radius: 4px;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.9) 0%, rgba(192, 57, 43, 0.9) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    cursor: pointer;
+    transition: transform 0.1s, background 0.2s, box-shadow 0.2s;
+}
+
+.wipe-arrow-btn:hover {
+    transform: scale(1.1);
+    background: linear-gradient(135deg, rgba(255, 99, 71, 1) 0%, rgba(231, 76, 60, 1) 100%);
+    box-shadow: 0 0 15px rgba(231, 76, 60, 0.8);
+}
+
+.cell.wipe-hover::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: rgba(231, 76, 60, 0.3);
+    outline: 2px solid rgba(231, 76, 60, 0.8);
+    outline-offset: -2px;
+    z-index: 10;
+    animation: bg-pulse-red 1s infinite alternate;
+}
+
+@keyframes bg-pulse-red {
+    from {
+        background: rgba(231, 76, 60, 0.2);
+    }
+
+    to {
+        background: rgba(231, 76, 60, 0.5);
+    }
+}
+
+.explosion-effect {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 200%;
+    height: 200%;
+    transform: translate(-50%, -50%) scale(0);
+    background: radial-gradient(circle, rgba(255, 255, 255, 1) 0%, rgba(255, 165, 0, 0.8) 20%, rgba(231, 76, 60, 0.6) 50%, rgba(0, 0, 0, 0) 80%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 20;
+    animation: blast-out 0.6s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+    mix-blend-mode: color-dodge;
+}
+
+@keyframes blast-out {
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 1;
+    }
+
+    50% {
+        transform: translate(-50%, -50%) scale(1.5);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(-50%, -50%) scale(2);
+        opacity: 0;
+    }
+}
+
+@keyframes wipe-shake {
+    0% {
+        transform: translate(0, 0) rotate(0deg);
+        filter: brightness(1) sepia(0);
+    }
+
+    20% {
+        transform: translate(-4px, 2px) rotate(-3deg);
+        filter: brightness(1.5) sepia(1) hue-rotate(-50deg) saturate(3);
+    }
+
+    40% {
+        transform: translate(4px, -2px) rotate(3deg);
+        filter: brightness(2) sepia(1) hue-rotate(-50deg) saturate(5);
+    }
+
+    60% {
+        transform: translate(-4px, -2px) rotate(-3deg);
+        filter: brightness(1.5) sepia(1) hue-rotate(-50deg) saturate(3);
+    }
+
+    80% {
+        transform: translate(4px, 2px) rotate(3deg);
+        filter: brightness(1.2) sepia(0.5) hue-rotate(-20deg) saturate(2);
+    }
+
+    100% {
+        transform: translate(0, 0) rotate(0deg);
+        filter: brightness(1) sepia(0);
+    }
+}
+
 /* ── Sequence Lines ── */
 .sequence-svg {
     position: absolute;
