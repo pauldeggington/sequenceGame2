@@ -145,6 +145,7 @@ class SequenceGame {
         this._takeoverRetries = 0;
         this.started = false;
         this.hintsEnabled = false;
+        this.fogOfWar = false;
         this.hoveredCardIndex = null;
         this.hands = {};         // For reconnects, host saves all hands dealt
         this.hostStateBackup = null; // Backup of the game state for migration
@@ -272,6 +273,21 @@ class SequenceGame {
             hintsToggle.onchange = () => {
                 this.hintsEnabled = hintsToggle.checked;
                 this.broadcast('config', { hintsEnabled: this.hintsEnabled });
+            };
+        }
+
+        // Fog of War toggle
+        const fogToggle = document.getElementById('fog-of-war-toggle');
+        if (fogToggle) {
+            fogToggle.onchange = () => {
+                this.fogOfWar = fogToggle.checked;
+                if (this.fogOfWar) {
+                    updateLayoutUI('default');
+                    if (this.ui.layoutRandomBtn) this.ui.layoutRandomBtn.disabled = true;
+                } else {
+                    if (this.ui.layoutRandomBtn) this.ui.layoutRandomBtn.disabled = false;
+                }
+                this.broadcast('config', { fogOfWar: this.fogOfWar, boardLayoutMode: this.boardLayoutMode });
             };
         }
 
@@ -600,6 +616,11 @@ class SequenceGame {
                 this.boardLayoutMode = data.boardLayoutMode;
                 if (this.updateLayoutUI) this.updateLayoutUI(this.boardLayoutMode);
             }
+            if (data.fogOfWar !== undefined) {
+                this.fogOfWar = data.fogOfWar;
+                const fogToggle = document.getElementById('fog-of-war-toggle');
+                if (fogToggle) fogToggle.checked = this.fogOfWar;
+            }
             if (ui) {
                 ui.teamCfg.style.display = 'block';
                 ui.playerList.style.display = 'block';
@@ -628,6 +649,7 @@ class SequenceGame {
             this.winTarget = data.winTarget || (this.teamCount === 3 ? 1 : 2);
             this.colorNames = data.colorNames || {};
             this.hintsEnabled = data.hintsEnabled || false;
+            this.fogOfWar = data.fogOfWar || false;
             this.boardLayoutMode = data.boardLayoutMode || 'default';
             this.board = data.board || BOARD_LAYOUT;
             this.started = true;
@@ -925,7 +947,12 @@ class SequenceGame {
                     ui.startBtn.style.display = 'block';
                 }
 
-                this.sendTo(conn.peer, 'config', { teamCount: this.teamCount, hintsEnabled: this.hintsEnabled, boardLayoutMode: this.boardLayoutMode });
+                this.sendTo(conn.peer, 'config', {
+                    teamCount: this.teamCount,
+                    hintsEnabled: this.hintsEnabled,
+                    fogOfWar: this.fogOfWar,
+                    boardLayoutMode: this.boardLayoutMode
+                });
                 if (this.myName) {
                     this.sendTo(conn.peer, 'name', this.myName);
                 }
@@ -1142,6 +1169,7 @@ class SequenceGame {
                     winTarget: this.winTarget,
                     colorNames: this.colorNames,
                     hintsEnabled: this.hintsEnabled,
+                    fogOfWar: this.fogOfWar,
                     boardLayoutMode: this.boardLayoutMode,
                     board: this.board,
                     lastMove: this.lastMove
@@ -1272,6 +1300,8 @@ class SequenceGame {
         ui.board.innerHTML = '';
         if (svg) ui.board.appendChild(svg);
 
+        const visibility = this.calculateVisibility();
+
         for (let r = 0; r < 10; r++) {
             for (let c = 0; c < 10; c++) {
                 const val = this.board[r][c];
@@ -1279,7 +1309,8 @@ class SequenceGame {
                 cell.id = `cell-${r}-${c}`;
                 const chip = this.chips[r][c];
 
-                cell.className = `cell ${this.calculateCellClass(r, c)}`;
+                const isVisible = visibility ? visibility[r][c] : true;
+                cell.className = `cell ${this.calculateCellClass(r, c, isVisible)}`;
 
                 if (animateEntrance) {
                     cell.classList.add('board-enter');
@@ -1324,7 +1355,36 @@ class SequenceGame {
         }
     }
 
-    calculateCellClass(r, c) {
+    calculateVisibility() {
+        if (!this.fogOfWar) return null;
+
+        const visibility = Array(10).fill(null).map(() => Array(10).fill(false));
+
+        // Corners are always visible
+        visibility[0][0] = true;
+        visibility[0][9] = true;
+        visibility[9][0] = true;
+        visibility[9][9] = true;
+
+        for (let r = 0; r < 10; r++) {
+            for (let c = 0; c < 10; c++) {
+                if (this.chips[r][c]) {
+                    // Mark 3x3 grid around placed chip
+                    for (let dr = -1; dr <= 1; dr++) {
+                        for (let dc = -1; dc <= 1; dc++) {
+                            const nr = r + dr, nc = c + dc;
+                            if (nr >= 0 && nr < 10 && nc >= 0 && nc < 10) {
+                                visibility[nr][nc] = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return visibility;
+    }
+
+    calculateCellClass(r, c, isVisible = true) {
         const val = this.board[r][c];
         const chip = this.chips[r][c];
         let highlight = '';
@@ -1339,18 +1399,25 @@ class SequenceGame {
             if ((val === selectedCard || val === hoveredCard) && !chip) highlight = ' highlight-hint';
         }
 
-        return `${val === 'FREE' ? ' free' : ''}${highlight}`;
+        let cls = `${val === 'FREE' ? ' free' : ''}${highlight}`;
+        if (this.fogOfWar && !isVisible) {
+            cls += ' fog-hidden';
+        }
+        return cls;
     }
 
     syncBoardState() {
         const ui = this.ui;
+        const visibility = this.calculateVisibility();
+
         for (let r = 0; r < 10; r++) {
             for (let c = 0; c < 10; c++) {
                 const cell = document.getElementById(`cell-${r}-${c}`);
                 if (!cell) continue;
                 const chip = this.chips[r][c];
 
-                const targetClass = `cell ${this.calculateCellClass(r, c)}`;
+                const isVisible = visibility ? visibility[r][c] : true;
+                const targetClass = `cell ${this.calculateCellClass(r, c, isVisible)}`;
                 if (cell.className !== targetClass) cell.className = targetClass;
 
                 let chipEl = cell.querySelector('.chip');
