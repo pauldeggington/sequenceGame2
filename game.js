@@ -120,7 +120,9 @@ class SequenceGame {
             seqLines: document.getElementById('sequence-lines'),
             emojiTrigger: document.getElementById('emoji-trigger'),
             emojiMenu: document.getElementById('emoji-menu'),
-            emojiFloatContainer: document.getElementById('emoji-float-container')
+            emojiFloatContainer: document.getElementById('emoji-float-container'),
+            jackHint: document.getElementById('jack-hint'),
+            deadHint: document.getElementById('dead-hint')
         };
 
         this.peer = null;
@@ -1327,10 +1329,11 @@ class SequenceGame {
         const chip = this.chips[r][c];
         let highlight = '';
 
-        if (this.jackMode === 'one-eye' && chip && chip !== this.myColor && !this.isChipInSequence(r, c)) highlight = ' highlight-remove';
-        if (this.jackMode === 'two-eye' && !chip && val !== 'FREE') highlight = ' highlight-place';
+        const currentJackMode = this.hoverJackMode || this.jackMode;
+        if (currentJackMode === 'one-eye' && chip && chip !== this.myColor && !this.isChipInSequence(r, c)) highlight = ' highlight-remove';
+        if (currentJackMode === 'two-eye' && !chip && val !== 'FREE') highlight = ' highlight-place';
 
-        if (this.hintsEnabled && !this.jackMode) {
+        if (this.hintsEnabled && !currentJackMode) {
             const selectedCard = this.selectedCardIndex !== null ? this.hand[this.selectedCardIndex] : null;
             const hoveredCard = this.hoveredCardIndex !== null ? this.hand[this.hoveredCardIndex] : null;
             if ((val === selectedCard || val === hoveredCard) && !chip) highlight = ' highlight-hint';
@@ -1492,7 +1495,9 @@ class SequenceGame {
 
             cardEl.onpointerenter = () => {
                 this.hoveredCardIndex = index;
-                if (this.hintsEnabled) {
+                this.hoverJackMode = isOneEye ? 'one-eye' : isTwoEye ? 'two-eye' : null;
+                this.handleCardHover(card, true, isDead, isOneEye, isTwoEye);
+                if (this.hintsEnabled || this.hoverJackMode) {
                     this.syncBoardState();
                 }
             };
@@ -1500,7 +1505,10 @@ class SequenceGame {
             cardEl.onpointerleave = () => {
                 if (this.hoveredCardIndex === index) {
                     this.hoveredCardIndex = null;
-                    if (this.hintsEnabled) {
+                    const hadHoverJack = !!this.hoverJackMode;
+                    this.hoverJackMode = null;
+                    this.handleCardHover(card, false);
+                    if (this.hintsEnabled || hadHoverJack) {
                         this.syncBoardState();
                     }
                 }
@@ -1537,6 +1545,36 @@ class SequenceGame {
             } else {
                 ui.deadHint.style.display = 'none';
             }
+        }
+    }
+
+    handleCardHover(card, isHovering, isDead = false, isOneEye = false, isTwoEye = false) {
+        const ui = this.ui;
+        if (!ui.jackHint || !ui.deadHint) return;
+
+        if (!isHovering) {
+            this.updateJackHint(); // restore selection state
+            return;
+        }
+
+        if (isOneEye) {
+            ui.jackHint.innerText = "👁 One-Eyed Jack: Click an opponent's chip to remove it.";
+            ui.jackHint.style.display = 'block';
+            ui.deadHint.style.display = 'none';
+        } else if (isTwoEye) {
+            ui.jackHint.innerText = "👁👁 Two-Eyed Jack: Click any empty cell to place your chip.";
+            ui.jackHint.style.display = 'block';
+            ui.deadHint.style.display = 'none';
+        } else {
+            ui.jackHint.style.display = 'none';
+        }
+
+        if (isDead) {
+            ui.deadHint.innerText = "💀 Dead Card: Click to exchange for a new one.";
+            ui.deadHint.style.display = 'block';
+            ui.jackHint.style.display = 'none';
+        } else if (!isOneEye && !isTwoEye) {
+            ui.deadHint.style.display = 'none';
         }
     }
 
