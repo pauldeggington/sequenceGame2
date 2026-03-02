@@ -515,11 +515,9 @@ body {
 }
 
 .sidebar {
-    width: 300px;
-    /* Expanded for standard vertical ad banners */
+    width: 160px !important;
     height: 100%;
     background: var(--bg-color);
-    /* Solid 100% opacity */
     border-left: 1px solid var(--glass-border);
     border-right: 1px solid var(--glass-border);
     display: flex;
@@ -527,6 +525,7 @@ body {
     align-items: center;
     padding-top: 20px;
     flex-shrink: 0;
+    transition: width 0.3s ease;
 }
 
 .sidebar-left {
@@ -538,7 +537,7 @@ body {
 }
 
 .ad-placeholder {
-    width: 250px;
+    width: 160px;
     height: 600px;
     background: rgba(255, 255, 255, 0.05);
     border: 2px dashed rgba(255, 255, 255, 0.1);
@@ -553,11 +552,31 @@ body {
     letter-spacing: 4px;
 }
 
+.mobile-ad {
+    display: none;
+    width: 100%;
+    justify-content: center;
+    padding: 10px 0;
+    min-height: 70px;
+    /* Space for 50px ad + padding */
+    background: rgba(0, 0, 0, 0.2);
+    border-top: 1px solid var(--glass-border);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.mobile-ad.bottom-ad {
+    margin-top: auto;
+    border-bottom: none;
+}
+
 @media (max-width: 1200px) {
     .sidebar {
-        display: none;
+        display: none !important;
     }
 
+    .mobile-ad {
+        display: flex;
+    }
 }
 
 
@@ -1245,14 +1264,23 @@ header h1 {
         overflow-y: auto;
         height: auto;
         min-height: 100dvh;
+        display: block;
+        /* Break flex on mobile to prevent sidebar push */
     }
 
-    #main-content,
-    #setup-screen,
-    #game-screen {
-        height: auto;
-        min-height: 100dvh;
-        overflow: visible;
+    .sidebar-wrapper {
+        display: block;
+        /* Stack on mobile */
+        width: 100%;
+    }
+
+    .sidebar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
     }
 
     .setup-split {
