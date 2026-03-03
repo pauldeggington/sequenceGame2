@@ -230,7 +230,12 @@
                                     </button>
                                 </div>
                             </div>
-                            <div id="connection-status" class="glass-panel">
+                            <div id="connection-status" class="glass-panel"
+                                style="display: flex; gap: 15px; align-items: center;">
+                                <button id="mute-btn" class="icon-button" aria-label="Toggle Sound"
+                                    style="background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; padding: 0 5px;">
+                                    🔊
+                                </button>
                                 <div class="turn-indicator" id="turn-indicator">Waiting...</div>
                                 <div class="player-chips">
                                     <div class="chip-count red">🔴 <span id="red-score">0</span></div>

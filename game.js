@@ -77,6 +77,134 @@ function genId(len = 8) {
         .map(b => b.toString(36).padStart(2, '0')).join('').slice(0, len);
 }
 
+// ── Sound Manager ─────────────────────────────────────────────
+class SoundManager {
+    constructor() {
+        this.ctx = null;
+        this.muted = localStorage.getItem('sequence_muted') === 'true';
+        this.masterGain = null;
+    }
+
+    init() {
+        if (this.ctx) return;
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            this.ctx = new AudioContext();
+            this.masterGain = this.ctx.createGain();
+            this.masterGain.connect(this.ctx.destination);
+            this.applyMuteState();
+        } catch (e) {
+            console.warn("Web Audio API not supported", e);
+        }
+    }
+
+    toggleMute() {
+        this.muted = !this.muted;
+        localStorage.setItem('sequence_muted', this.muted);
+        this.applyMuteState();
+        return this.muted;
+    }
+
+    applyMuteState() {
+        if (this.masterGain) {
+            this.masterGain.gain.value = this.muted ? 0 : 0.3; // 30% master volume
+        }
+    }
+
+    playTone(frequency, type, duration, vol = 1, delay = 0) {
+        if (!this.ctx || this.muted) return;
+
+        const osc = this.ctx.createOscillator();
+        const gainNode = this.ctx.createGain();
+
+        osc.type = type;
+        osc.frequency.setValueAtTime(frequency, this.ctx.currentTime + delay);
+
+        gainNode.gain.setValueAtTime(0, this.ctx.currentTime + delay);
+        gainNode.gain.linearRampToValueAtTime(vol, this.ctx.currentTime + delay + 0.05); // quick fade in
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + delay + duration); // fade out
+
+        osc.connect(gainNode);
+        gainNode.connect(this.masterGain);
+
+        osc.start(this.ctx.currentTime + delay);
+        osc.stop(this.ctx.currentTime + delay + duration);
+    }
+
+    // --- Specific Game Sounds ---
+
+    playYourTurn() {
+        // Double friendly beep
+        this.playTone(440, 'sine', 0.15, 0.8, 0);
+        this.playTone(660, 'sine', 0.2, 0.8, 0.15);
+    }
+
+    playSelectCard() {
+        // Soft click/pop
+        this.playTone(300, 'triangle', 0.05, 0.5);
+    }
+
+    playPlaceChip() {
+        // Firm placing sound
+        this.playTone(150, 'square', 0.08, 0.6);
+    }
+
+    playDrawCard() {
+        // Ascending quick sweep
+        if (!this.ctx || this.muted) return;
+        const osc = this.ctx.createOscillator();
+        const gainNode = this.ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(300, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(600, this.ctx.currentTime + 0.15);
+
+        gainNode.gain.setValueAtTime(0.5, this.ctx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+
+        osc.connect(gainNode);
+        gainNode.connect(this.masterGain);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.15);
+    }
+
+    playJackPlayed() {
+        // Distinct low-high blip indicating special power
+        this.playTone(200, 'sawtooth', 0.1, 0.5, 0);
+        this.playTone(500, 'square', 0.2, 0.5, 0.1);
+    }
+
+    playError() {
+        // Dull thud / buzz
+        this.playTone(100, 'square', 0.2, 0.6);
+    }
+
+    playSequenceAchieved() {
+        // Triumphant C Major chord
+        this.playTone(261.63, 'square', 0.8, 0.5, 0); // C4
+        this.playTone(329.63, 'square', 0.8, 0.5, 0); // E4
+        this.playTone(392.00, 'square', 0.8, 0.5, 0); // G4
+        // Arpeggio up
+        this.playTone(523.25, 'sine', 0.6, 0.7, 0.2); // C5
+    }
+
+    playWin() {
+        // Celebratory arpeggio
+        let delay = 0;
+        const notes = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99]; // C, E, G, C, E, G
+        for (let i = 0; i < notes.length; i++) {
+            this.playTone(notes[i], 'triangle', 0.3, 0.6, delay);
+            delay += 0.1;
+        }
+        // Final chord
+        this.playTone(523.25, 'square', 1.5, 0.6, delay);
+        this.playTone(659.25, 'square', 1.5, 0.6, delay);
+        this.playTone(783.99, 'square', 1.5, 0.6, delay);
+    }
+}
+
+const sounds = new SoundManager();
+
 // ── Game Class ────────────────────────────────────────────────
 class SequenceGame {
     constructor() {
@@ -129,7 +257,8 @@ class SequenceGame {
             wipeActionPanel: document.getElementById('wipe-action-panel'),
             wipeActionBtn: document.getElementById('wipe-action-btn'),
             wipeCancelBtn: document.getElementById('wipe-cancel-btn'),
-            wipeToggle: document.getElementById('wipe-toggle')
+            wipeToggle: document.getElementById('wipe-toggle'),
+            muteBtn: document.getElementById('mute-btn')
         };
 
         this.peer = null;
@@ -156,6 +285,25 @@ class SequenceGame {
         this.hoveredCardIndex = null;
         this.hands = {};         // For reconnects, host saves all hands dealt
         this.hostStateBackup = null; // Backup of the game state for migration
+
+        // Init mute UI state
+        if (this.ui.muteBtn) {
+            this.ui.muteBtn.innerText = sounds.muted ? '🔇' : '🔊';
+            this.ui.muteBtn.onclick = () => {
+                sounds.init(); // ensure context exists if clicking
+                const isMuted = sounds.toggleMute();
+                this.ui.muteBtn.innerText = isMuted ? '🔇' : '🔊';
+            };
+        }
+
+        // Initialize audio on first user interaction anywhere
+        const initAudio = () => {
+            sounds.init();
+            document.removeEventListener('pointerdown', initAudio);
+            document.removeEventListener('keydown', initAudio);
+        };
+        document.addEventListener('pointerdown', initAudio);
+        document.addEventListener('keydown', initAudio);
 
         this.initSetup();
     }
@@ -1474,6 +1622,7 @@ class SequenceGame {
 
                 // Double Two-Eyed Jack selection
                 if (isTwoEye) {
+                    sounds.playSelectCard();
                     if (!this.selectedCards) this.selectedCards = [];
 
                     if (this.selectedCards.includes(index)) {
@@ -1551,11 +1700,13 @@ class SequenceGame {
 
                     if (dead) {
                         if (this.exchangedThisTurn) {
+                            sounds.playError();
                             this.log("⚠ Already exchanged a dead card this turn.");
                             return;
                         }
 
                         const newCard = this.deck.length > 0 ? this.deck.shift() : null;
+                        sounds.playSelectCard();
                         this.hand.splice(index, 1);
                         if (newCard) this.hand.push(newCard);
 
@@ -1588,6 +1739,7 @@ class SequenceGame {
                     }
                 }
 
+                sounds.playSelectCard();
                 this.selectedCardIndex = index;
                 this.jackMode = isOneEye ? 'one-eye' : isTwoEye ? 'two-eye' : null;
                 this.renderHand();
@@ -1832,6 +1984,8 @@ class SequenceGame {
         const myName = (this.colorNames && this.colorNames[this.myColor]) || this.myColor;
         this.log(`💥 ${myName} used ${cardNamesPlayed} to WIPE ${axis === 'row' ? 'Row' : 'Col'} ${index + 1}!`);
 
+        sounds.playJackPlayed();
+
         // Tell opponents about the wipe before we animate it
         this.sendMove({
             axis, index,
@@ -1937,9 +2091,11 @@ class SequenceGame {
             if (chip && chip !== this.myColor && !this.isChipInSequence(r, c, chip)) {
                 moveType = 'remove';
             } else if (chip && chip !== this.myColor) {
+                sounds.playError();
                 this.log("⚠ Cannot remove a chip from a completed sequence.");
                 return;
             } else {
+                sounds.playError();
                 this.log("⚠ One-eyed Jack: Click an opponent's chip.");
                 return;
             }
@@ -1947,6 +2103,7 @@ class SequenceGame {
             if (!chip && !isFree) {
                 moveType = 'place';
             } else {
+                sounds.playError();
                 this.log("⚠ Two-eyed Jack: Click any empty space.");
                 return;
             }
@@ -1954,6 +2111,7 @@ class SequenceGame {
             if (!isFree && card === cellVal && !chip) {
                 moveType = 'place';
             } else {
+                sounds.playError();
                 this.log("⚠ Card doesn't match this cell.");
                 return;
             }
@@ -1967,9 +2125,18 @@ class SequenceGame {
             this.lastMove = null;
         }
 
+        if (ONE_EYE.has(card) || TWO_EYE.has(card)) {
+            sounds.playJackPlayed();
+        } else {
+            sounds.playPlaceChip();
+        }
+
         const drawnCard = this.deck.length > 0 ? this.deck.shift() : null;
         this.hand.splice(this.selectedCardIndex, 1);
-        if (drawnCard) this.hand.push(drawnCard);
+        if (drawnCard) {
+            this.hand.push(drawnCard);
+            setTimeout(() => sounds.playDrawCard(), 300); // Slight delay for draw sound
+        }
 
         // Update host state
         if (this.isHost && this.playerStates[this.playerID]) {
@@ -2520,6 +2687,7 @@ class SequenceGame {
             }
             ui.turnIndicator.innerText = "Your Turn!";
             this.showTurnOverlay();
+            sounds.playYourTurn();
             if (navigator.vibrate) navigator.vibrate(200);
         } else {
             const name = (this.colorNames && this.colorNames[this.currentTurn]) || this.currentTurn;
@@ -2561,6 +2729,7 @@ class SequenceGame {
                 }
             }
 
+            sounds.playWin();
             ui.gameOverOverlay.style.display = 'flex';
         }
     }
@@ -2577,6 +2746,7 @@ class SequenceGame {
 
         overlay.style.display = 'flex';
 
+        sounds.playSequenceAchieved();
         // Vibrate if mobile
         if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
 
