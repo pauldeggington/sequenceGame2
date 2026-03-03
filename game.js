@@ -742,6 +742,9 @@ class SequenceGame {
                 }
                 this.syncPlayers();
             }
+        } else if (type === 'chat') {
+            const { msg, color } = data;
+            this.showChatFloat(msg, color);
         } else if (type === 'name') {
             if (this.isHost) {
                 this.peerNames[peerId] = data;
@@ -1189,6 +1192,11 @@ class SequenceGame {
         this.broadcast('emoji', emoji);
     }
 
+    sendChat(msg) {
+        if (this.isSinglePlayer) return;
+        this.broadcast('chat', { msg, color: this.myColor || 'red' });
+    }
+
     sendJoin() {
         if (!this.isSinglePlayer && this.hostConnection && this.hostConnection.open) {
             this.hostConnection.send({ type: 'join', data: { name: this.myName, playerID: this.playerID } });
@@ -1415,6 +1423,14 @@ class SequenceGame {
                     this.showEmojiFloat(opt.innerText);
                 };
             });
+            document.querySelectorAll('.chat-opt').forEach(opt => {
+                opt.onclick = (e) => {
+                    e.stopPropagation();
+                    const msg = opt.getAttribute('data-msg');
+                    this.sendChat(msg);
+                    this.showChatFloat(msg, this.myColor || 'red');
+                };
+            });
             document.addEventListener('click', () => ui.emojiMenu.style.display = 'none');
             ui.emojiMenu.onclick = (e) => e.stopPropagation();
         }
@@ -1555,11 +1571,21 @@ class SequenceGame {
                     if (!chipEl) {
                         chipEl = document.createElement('div');
                         cell.appendChild(chipEl);
+
+                        // If it's the last move, animate it on append
+                        if (this.lastMove && this.lastMove.r === r && this.lastMove.c === c) {
+                            chipEl.classList.add('chip-animate');
+                        }
                     }
                     const isLastMove = this.lastMove && this.lastMove.r === r && this.lastMove.c === c;
                     const isLocked = this.sequenceGrid && this.sequenceGrid[r][c];
                     const chipClass = `chip ${chip}${isLastMove ? ' last-move' : ''}${isLocked ? ' locked' : ''}`;
-                    if (chipEl.className !== chipClass) chipEl.className = chipClass;
+                    // Only update class if base classes change, but preserve animation
+                    const currentBase = chipEl.className.replace(' chip-animate', '');
+                    if (currentBase !== chipClass) {
+                        const hasAnim = chipEl.classList.contains('chip-animate');
+                        chipEl.className = chipClass + (hasAnim ? ' chip-animate' : '');
+                    }
                 } else if (chipEl) {
                     chipEl.remove();
                 }
@@ -2784,6 +2810,33 @@ class SequenceGame {
 
         ui.emojiFloatContainer.appendChild(el);
         setTimeout(() => el.remove(), 3000);
+    }
+
+    showChatFloat(msg, color) {
+        const ui = this.ui;
+        if (!ui.emojiFloatContainer) return;
+
+        const el = document.createElement('div');
+        el.className = 'floating-chat';
+        el.innerText = msg;
+
+        if (color === 'red') {
+            el.style.borderColor = '#ff7675';
+            el.style.color = '#ff7675';
+        } else if (color === 'blue') {
+            el.style.borderColor = '#74b9ff';
+            el.style.color = '#74b9ff';
+        } else if (color === 'green') {
+            el.style.borderColor = '#55efc4';
+            el.style.color = '#55efc4';
+        }
+
+        const left = 20 + Math.random() * 40; // Don't go too far right to avoid clipping width
+        el.style.left = left + '%';
+        el.style.bottom = '20px';
+
+        ui.emojiFloatContainer.appendChild(el);
+        setTimeout(() => el.remove(), 3500);
     }
 
     log(msg) {
