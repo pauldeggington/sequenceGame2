@@ -83,6 +83,26 @@ class SoundManager {
         this.ctx = null;
         this.muted = localStorage.getItem('sequence_muted') === 'true';
         this.masterGain = null;
+
+        // HTML5 Audio mapping
+        this.audioSamples = {
+            deckShuffle: new Audio('sounds/JDSherbert - Tabletop Games SFX Pack - Deck Shuffle - 1.mp3'),
+            pieceImpact: new Audio('sounds/JDSherbert - Tabletop Games SFX Pack - Piece Impact - 2.mp3')
+        };
+        Object.values(this.audioSamples).forEach(a => {
+            a.volume = 0.6;
+            a.muted = this.muted;
+        });
+    }
+
+    playSample(name) {
+        if (this.muted) return;
+        const audio = this.audioSamples[name];
+        if (audio) {
+            const clone = audio.cloneNode();
+            clone.volume = audio.volume;
+            clone.play().catch(e => console.warn("Audio play failed:", e));
+        }
     }
 
     init() {
@@ -108,6 +128,9 @@ class SoundManager {
     applyMuteState() {
         if (this.masterGain) {
             this.masterGain.gain.value = this.muted ? 0 : 0.3; // 30% master volume
+        }
+        if (this.audioSamples) {
+            Object.values(this.audioSamples).forEach(a => a.muted = this.muted);
         }
     }
 
@@ -145,27 +168,15 @@ class SoundManager {
     }
 
     playPlaceChip() {
-        // Firm placing sound
-        this.playTone(150, 'square', 0.08, 0.6);
+        this.playSample('pieceImpact');
     }
 
     playDrawCard() {
-        // Ascending quick sweep
-        if (!this.ctx || this.muted) return;
-        const osc = this.ctx.createOscillator();
-        const gainNode = this.ctx.createGain();
+        this.playSample('deckShuffle');
+    }
 
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(300, this.ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(600, this.ctx.currentTime + 0.15);
-
-        gainNode.gain.setValueAtTime(0.5, this.ctx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
-
-        osc.connect(gainNode);
-        gainNode.connect(this.masterGain);
-        osc.start();
-        osc.stop(this.ctx.currentTime + 0.15);
+    playDeckShuffle() {
+        this.playSample('deckShuffle');
     }
 
     playJackPlayed() {
@@ -802,6 +813,7 @@ class SequenceGame {
             this.board = data.board || BOARD_LAYOUT;
             this.started = true;
             this.showGameScreen();
+            sounds.playDeckShuffle();
 
             if (data.boardChips) {
                 // Check if game already ended upon reconnection sync
@@ -1334,6 +1346,7 @@ class SequenceGame {
         this.saveGameState(); // CRITICAL: Save initial game state
 
         this.showGameScreen();
+        sounds.playDeckShuffle();
     }
 
     showGameScreen() {
