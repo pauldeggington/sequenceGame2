@@ -1633,7 +1633,8 @@ class SequenceGame {
                         }
                     } else {
                         // Select
-                        if (this.selectedCards.length < 2) {
+                        const maxSelect = this.wipeEnabled ? 2 : 1;
+                        if (this.selectedCards.length < maxSelect) {
                             // Only allow selecting if the previously selected card is also a Two-Eyed Jack
                             if (this.selectedCards.length === 0 || TWO_EYE.has(this.hand[this.selectedCards[0]])) {
                                 this.selectedCards.push(index);
@@ -1643,7 +1644,7 @@ class SequenceGame {
                                 this.selectedCardIndex = index;
                             }
                         } else {
-                            // Replace first selected if already 2
+                            // Replace first selected if already at max
                             this.selectedCards.shift();
                             this.selectedCards.push(index);
                             this.selectedCardIndex = index;
