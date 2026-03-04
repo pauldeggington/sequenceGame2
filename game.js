@@ -219,6 +219,10 @@ const sounds = new SoundManager();
 // ── Game Class ────────────────────────────────────────────────
 class SequenceGame {
     constructor() {
+        this.animalese = new Animalese('animalese_lib/animalese.wav', function () {
+            // Animalese initialized
+        });
+        this.lastChatSoundTime = 0;
         this.board = BOARD_LAYOUT;
         this.boardLayoutMode = 'default';
         this.chips = Array(10).fill(null).map(() => Array(10).fill(null));
@@ -2800,6 +2804,12 @@ class SequenceGame {
         const ui = this.ui;
         if (!ui.emojiFloatContainer) return;
 
+        const now = Date.now();
+        if (now - this.lastChatSoundTime < 2000) {
+            return; // Spam protection for both emojis and chat
+        }
+        this.lastChatSoundTime = now;
+
         const el = document.createElement('div');
         el.className = 'floating-emoji';
         el.innerText = emoji;
@@ -2815,6 +2825,20 @@ class SequenceGame {
     showChatFloat(msg, color) {
         const ui = this.ui;
         if (!ui.emojiFloatContainer) return;
+
+        const now = Date.now();
+        if (now - this.lastChatSoundTime < 2000) {
+            return; // Spam protection for both text and sound
+        }
+
+        this.lastChatSoundTime = now;
+
+        if (this.animalese) {
+            var wave = this.animalese.Animalese(msg, false, 1.0);
+            var audio = new Audio();
+            audio.src = wave.dataURI;
+            audio.play().catch(e => console.warn("Animalese play failed", e));
+        }
 
         const el = document.createElement('div');
         el.className = 'floating-chat';
