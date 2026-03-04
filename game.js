@@ -219,7 +219,7 @@ const sounds = new SoundManager();
 // ── Game Class ────────────────────────────────────────────────
 class SequenceGame {
     constructor() {
-        this.animalese = new Animalese('animalese_lib/animalese.wav', function () {
+        this.animalese = new Animalese('animalese.wav', function () {
             // Animalese initialized
         });
         this.lastChatSoundTime = 0;
