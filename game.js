@@ -2833,7 +2833,7 @@ class SequenceGame {
 
         this.lastChatSoundTime = now;
 
-        if (this.animalese) {
+        if (this.animalese && !sounds.muted) {
             var wave = this.animalese.Animalese(msg, false, 1.0);
             var audio = new Audio();
             audio.src = wave.dataURI;
