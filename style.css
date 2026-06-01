@@ -1,14 +1,14 @@
 :root {
-    --bg-color: #0d1b1e;
-    --board-bg: #0b4d3c;
-    --gold: #d4af37;
-    --gold-light: #f1e5ac;
-    --red-chip: #c0392b;
-    --blue-chip: #2980b9;
-    --green-chip: #27ae60;
-    --glass: rgba(255, 255, 255, 0.08);
-    --glass-border: rgba(255, 255, 255, 0.15);
-    --text: #e0e0e0;
+    --bg-color: #0b0c16;
+    --board-bg: rgba(25, 25, 45, 0.6);
+    --primary: #8a2be2;
+    --primary-light: #b366ff;
+    --red-chip: #ff3366;
+    --blue-chip: #33ccff;
+    --green-chip: #00ff99;
+    --glass: rgba(20, 20, 40, 0.5);
+    --glass-border: rgba(138, 43, 226, 0.3);
+    --text: #ffffff;
 }
 
 * {
@@ -31,6 +31,18 @@ body {
     /* IE/Edge */
 }
 
+body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 50% 30%, rgba(138, 43, 226, 0.15) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: -2;
+}
+
 /* Hide scrollbar for Chrome, Safari and Opera */
 *::-webkit-scrollbar {
     display: none;
@@ -48,14 +60,15 @@ body {
     overflow: hidden;
     z-index: -1;
     pointer-events: none;
-    opacity: 0.25;
+    opacity: 0.15;
+    mix-blend-mode: screen;
 }
 
 .bg-card,
 .bg-token {
     position: absolute;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-    filter: blur(1px);
+    box-shadow: 0 10px 40px rgba(138, 43, 226, 0.2);
+    filter: blur(4px) brightness(1.2);
     animation: float var(--duration) ease-in-out infinite var(--delay);
     will-change: transform;
 }
@@ -155,15 +168,19 @@ body {
     min-width: 300px;
     text-align: center;
     padding: 30px 25px;
-    background: var(--bg-color);
-    /* Solid 100% opacity */
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+    background: linear-gradient(180deg, rgba(30, 30, 50, 0.6) 0%, rgba(15, 15, 25, 0.8) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(138, 43, 226, 0.2);
+    border-top: 1px solid rgba(138, 43, 226, 0.5);
+    border-radius: 20px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), inset 0 2px 20px rgba(138, 43, 226, 0.1);
 }
 
 .setup-card h1 {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Outfit', sans-serif;
     font-size: 3.5rem;
-    color: var(--gold);
+    color: var(--primary);
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
     font-style: italic;
     margin-bottom: 4px;
@@ -179,15 +196,15 @@ body {
 /* Instructions card specifics */
 .instructions-card {
     text-align: left;
-    background: rgba(13, 27, 30, 0.95);
+    background: rgba(20, 20, 35, 0.95);
     /* High opacity dark background */
-    border: 1px solid var(--gold);
+    border: 1px solid var(--primary);
 }
 
 .instructions-card h2 {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Outfit', sans-serif;
     font-size: 2rem;
-    color: var(--gold);
+    color: var(--primary);
     margin-bottom: 15px;
     text-align: center;
 }
@@ -208,7 +225,7 @@ body {
 
 .rules-list li::before {
     content: "•";
-    color: var(--gold);
+    color: var(--primary);
     font-weight: bold;
     font-size: 1.2rem;
     position: absolute;
@@ -217,20 +234,20 @@ body {
 }
 
 .rules-list li strong {
-    color: var(--gold-light);
+    color: var(--primary-light);
 }
 
 /* Strategy card specifics */
 .strategy-card {
     text-align: left;
-    background: rgba(13, 27, 30, 0.95);
-    border: 1px solid var(--gold);
+    background: rgba(20, 20, 35, 0.95);
+    border: 1px solid var(--primary);
 }
 
 .strategy-card h2 {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Outfit', sans-serif;
     font-size: 2rem;
-    color: var(--gold);
+    color: var(--primary);
     margin-bottom: 20px;
     text-align: center;
 }
@@ -238,7 +255,7 @@ body {
 .strategy-item h3 {
     font-family: 'Outfit', sans-serif;
     font-size: 1.2rem;
-    color: var(--gold-light);
+    color: var(--primary-light);
     margin-bottom: 10px;
 }
 
@@ -265,7 +282,7 @@ body {
 
 .strategy-list li::before {
     content: "⚡";
-    color: var(--gold);
+    color: var(--primary);
     font-size: 0.8rem;
     position: absolute;
     left: 0;
@@ -273,7 +290,7 @@ body {
 }
 
 .strategy-list li strong {
-    color: var(--gold-light);
+    color: var(--primary-light);
 }
 
 .setup-section {
@@ -285,7 +302,7 @@ body {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1.5px;
-    color: var(--gold-light);
+    color: var(--primary-light);
     margin-bottom: 12px;
 }
 
@@ -312,7 +329,7 @@ body {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: var(--gold-light);
+    color: var(--primary-light);
     margin-bottom: 6px;
 }
 
@@ -333,7 +350,7 @@ body {
 }
 
 #player-name:focus {
-    border-color: var(--gold);
+    border-color: var(--primary);
     box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
 }
 
@@ -346,7 +363,7 @@ body {
     background: rgba(0, 0, 0, 0.4);
     border: 1px solid var(--glass-border);
     border-radius: 8px;
-    color: var(--gold-light);
+    color: var(--primary-light);
     padding: 10px 12px;
     font-size: 16px;
     /* 16px prevents iOS Safari from auto-zooming on focus */
@@ -359,7 +376,7 @@ body {
 }
 
 #invite-url:focus {
-    border-color: var(--gold);
+    border-color: var(--primary);
     box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
 }
 
@@ -385,13 +402,13 @@ body {
 }
 
 .team-btn:hover {
-    border-color: var(--gold);
+    border-color: var(--primary);
 }
 
 .team-btn.selected {
-    border-color: var(--gold);
+    border-color: var(--primary);
     background: rgba(212, 175, 55, 0.15);
-    color: var(--gold-light);
+    color: var(--primary-light);
 }
 
 .team-labels {
@@ -446,7 +463,7 @@ body {
 }
 
 .player-entry.me {
-    color: var(--gold-light);
+    color: var(--primary-light);
 }
 
 /* Start button */
@@ -633,20 +650,21 @@ header {
 }
 
 header h1 {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Outfit', sans-serif;
     font-size: 1.6rem;
-    color: var(--gold);
+    color: var(--primary);
     font-style: italic;
 }
 
 .glass-panel {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid var(--glass-border);
-    border-radius: 10px;
+    background: linear-gradient(180deg, rgba(30, 30, 50, 0.5) 0%, rgba(15, 15, 25, 0.7) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(138, 43, 226, 0.2);
+    border-top: 1px solid rgba(138, 43, 226, 0.4);
+    border-radius: 16px;
     padding: 8px 12px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), inset 0 1px 10px rgba(138, 43, 226, 0.05);
 }
 
 #host-dropped-warning {
@@ -689,7 +707,7 @@ header h1 {
 .turn-indicator {
     font-size: 1rem;
     font-weight: 700;
-    color: var(--gold-light);
+    color: var(--primary-light);
 }
 
 .player-chips {
@@ -741,6 +759,9 @@ header h1 {
     width: min(94vw, calc(65vh * 5 / 7));
     width: min(94vw, calc(65dvh * 5 / 7));
     height: auto;
+    background: var(--board-bg);
+    border-radius: 8px;
+    border: 1px solid rgba(138, 43, 226, 0.15);
     box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.5), 0 10px 25px rgba(0, 0, 0, 0.4);
     padding: 4px;
     position: relative;
@@ -811,7 +832,7 @@ header h1 {
 }
 
 .cell-card-simple.free-space {
-    background: radial-gradient(circle at center, var(--gold-light), var(--gold));
+    background: radial-gradient(circle at center, var(--primary-light), var(--primary));
     color: #332200;
     font-size: clamp(1.4rem, 5vmin, 2.4rem);
     display: flex;
@@ -864,9 +885,9 @@ header h1 {
     left: 0;
     right: 0;
     bottom: 0;
-    outline: 3px solid var(--gold);
+    outline: 3px solid var(--primary);
     outline-offset: -2px;
-    box-shadow: inset 0 0 15px var(--gold);
+    box-shadow: inset 0 0 15px var(--primary);
     border-radius: 3px;
     pointer-events: none;
     z-index: 10;
@@ -1082,8 +1103,8 @@ header h1 {
 }
 
 .card.selected {
-    border-color: var(--gold);
-    box-shadow: 0 0 14px var(--gold), 0 6px 18px rgba(0, 0, 0, 0.3);
+    border-color: var(--primary);
+    box-shadow: 0 0 14px var(--primary), 0 6px 18px rgba(0, 0, 0, 0.3);
     transform: translateY(-12px);
     z-index: 6;
 }
@@ -1107,7 +1128,7 @@ header h1 {
     position: absolute;
     bottom: -2px;
     right: -2px;
-    background: var(--gold);
+    background: var(--primary);
     color: #000;
     font-size: 0.7rem;
     padding: 1px 4px;
@@ -1130,7 +1151,7 @@ header h1 {
     border-radius: 6px;
     padding: 4px 8px;
     font-size: 0.75rem;
-    color: var(--gold-light);
+    color: var(--primary-light);
     margin-bottom: 4px;
     text-align: center;
 }
@@ -1218,7 +1239,7 @@ header h1 {
 .turn-overlay-text {
     font-size: clamp(2rem, 8vw, 4rem);
     font-weight: 900;
-    color: var(--gold);
+    color: var(--primary);
     text-shadow: 0 0 30px rgba(212, 175, 55, 0.6), 0 4px 20px rgba(0, 0, 0, 0.5);
     animation: turn-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -1248,16 +1269,17 @@ header h1 {
 
 /* Buttons */
 .premium-button {
-    background: linear-gradient(135deg, var(--gold) 0%, #b8860b 100%);
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
     border: none;
-    color: #332200;
-    padding: 10px 20px;
-    border-radius: 8px;
+    color: #ffffff;
+    padding: 12px 28px;
+    border-radius: 50px;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s;
-    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
-    font-size: 0.9rem;
+    box-shadow: 0 4px 15px rgba(106, 17, 203, 0.4), inset 0 2px 5px rgba(255, 255, 255, 0.2);
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
     appearance: none;
     -webkit-appearance: none;
     touch-action: manipulation;
@@ -1265,19 +1287,19 @@ header h1 {
 
 .premium-button:hover {
     transform: scale(1.03);
-    box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5);
+    box-shadow: 0 6px 20px rgba(106, 17, 203, 0.6);
 }
 
 .premium-button.secondary {
     background: transparent;
-    border: 1px solid var(--gold);
-    color: var(--gold);
+    border: 1px solid var(--primary);
+    color: var(--primary);
     box-shadow: none;
 }
 
 .premium-button.secondary:hover {
-    background: rgba(212, 175, 55, 0.1);
-    box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+    background: rgba(138, 43, 226, 0.1);
+    box-shadow: 0 0 15px rgba(138, 43, 226, 0.2);
 }
 
 /* ══════════════════════════════════════════
@@ -1416,7 +1438,7 @@ input[type="checkbox"]#wipe-toggle {
 
 input[type="checkbox"]#show-hints-toggle:checked+.toggle-switch,
 input[type="checkbox"]#wipe-toggle:checked+.toggle-switch {
-    background: var(--gold);
+    background: var(--primary);
 }
 
 input[type="checkbox"]#show-hints-toggle:checked+.toggle-switch::after,
@@ -1439,7 +1461,7 @@ input[type="checkbox"]#wipe-toggle:checked+.toggle-switch::after {
     z-index: 20;
     display: flex;
     gap: 10px;
-    background: rgba(13, 27, 30, 0.9);
+    background: rgba(20, 20, 35, 0.95);
     padding: 15px;
     border-radius: 12px;
     border: 2px solid #e74c3c;
@@ -1573,8 +1595,8 @@ input[type="checkbox"]#wipe-toggle:checked+.toggle-switch::after {
     width: 160px;
     padding: 12px;
     border-radius: 12px;
-    background: rgba(13, 27, 30, 0.95);
-    border: 1px solid var(--gold);
+    background: rgba(20, 20, 35, 0.95);
+    border: 1px solid var(--primary);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -1647,9 +1669,9 @@ input[type="checkbox"]#wipe-toggle:checked+.toggle-switch::after {
     position: absolute;
     font-size: 1.1rem;
     font-weight: 600;
-    color: var(--gold-light);
-    background: rgba(13, 27, 30, 0.9);
-    border: 1px solid var(--gold);
+    color: var(--primary-light);
+    background: rgba(20, 20, 35, 0.95);
+    border: 1px solid var(--primary);
     border-radius: 12px;
     padding: 6px 12px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
@@ -1900,17 +1922,22 @@ input[type="checkbox"]#wipe-toggle:checked+.toggle-switch::after {
     margin-top: auto;
     width: 100%;
     z-index: 20;
-    background: rgba(13, 27, 30, 0.5);
+    background: rgba(20, 20, 35, 0.7);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(138, 43, 226, 0.2);
 }
 
 .site-footer a {
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.6);
     text-decoration: none;
     margin: 0 15px;
     font-size: 0.9rem;
-    transition: color 0.2s;
+    font-weight: 500;
+    transition: color 0.2s, text-shadow 0.2s;
 }
 
 .site-footer a:hover {
-    color: var(--gold);
+    color: var(--primary-light);
+    text-shadow: 0 0 8px rgba(179, 102, 255, 0.6);
 }

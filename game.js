@@ -321,6 +321,46 @@ class SequenceGame {
         document.addEventListener('keydown', initAudio);
 
         this.initSetup();
+        this.initBackgroundCards();
+    }
+
+    initBackgroundCards() {
+        const bgContainer = document.getElementById('bg-cards');
+        if (!bgContainer) return;
+
+        // Flatten board layout to get unique cards (excluding FREE)
+        const allCards = BOARD_LAYOUT.flat().filter(c => c !== 'FREE');
+        const cardCount = 15;
+
+        for (let i = 0; i < cardCount; i++) {
+            const card = allCards[Math.floor(Math.random() * allCards.length)];
+            const cardEl = document.createElement('div');
+            cardEl.className = 'bg-card';
+            cardEl.style.backgroundImage = `url(${getCardImagePath(card)})`;
+            this.setRandomFloatingStyles(cardEl);
+            bgContainer.appendChild(cardEl);
+        }
+
+        const colors = ['red', 'blue', 'green'];
+        for (let i = 0; i < 12; i++) {
+            const tokenEl = document.createElement('div');
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            tokenEl.className = `bg-token ${color}`;
+            this.setRandomFloatingStyles(tokenEl);
+            bgContainer.appendChild(tokenEl);
+        }
+    }
+
+    setRandomFloatingStyles(el) {
+        el.style.left = `${Math.random() * 95}%`;
+        el.style.top = `${Math.random() * 95}%`;
+        el.style.setProperty('--duration', `${20 + Math.random() * 25}s`);
+        el.style.setProperty('--delay', `${-Math.random() * 20}s`);
+        el.style.setProperty('--rot', `${Math.random() * 360}deg`);
+        el.style.setProperty('--x1', `${-100 + Math.random() * 200}px`);
+        el.style.setProperty('--y1', `${-100 + Math.random() * 200}px`);
+        el.style.setProperty('--x2', `${-100 + Math.random() * 200}px`);
+        el.style.setProperty('--y2', `${-100 + Math.random() * 200}px`);
     }
 
     initSetup() {
@@ -635,7 +675,7 @@ class SequenceGame {
                     navigator.clipboard.writeText(shareUrl).then(() => {
                         const originalLabel = document.querySelector('.invite-label').innerText;
                         document.querySelector('.invite-label').innerText = '📋 Copied to clipboard!';
-                        document.querySelector('.invite-label').style.color = 'var(--gold)';
+                        document.querySelector('.invite-label').style.color = 'var(--primary)';
                         setTimeout(() => {
                             document.querySelector('.invite-label').innerText = originalLabel;
                             document.querySelector('.invite-label').style.color = '';
@@ -1082,6 +1122,9 @@ class SequenceGame {
             this.peer.destroy();
         }
 
+        const bgCards = document.getElementById('bg-cards');
+        if (bgCards) bgCards.style.display = 'block';
+
         const ui = this.ui;
         if (ui) {
             ui.gameScreen.style.display = 'none';
@@ -1367,6 +1410,9 @@ class SequenceGame {
         ui.gameScreen = document.getElementById('game-screen');
         ui.setupScreen.style.display = 'none';
         ui.gameScreen.style.display = 'block';
+
+        const bgCards = document.getElementById('bg-cards');
+        if (bgCards) bgCards.style.display = 'none';
 
         if (this.teamCount >= 3) ui.greenScoreWrap.style.display = 'inline';
 
@@ -2737,7 +2783,7 @@ class SequenceGame {
             const name = (this.colorNames && this.colorNames[this.currentTurn]) || this.currentTurn;
             ui.turnIndicator.innerText = `⏳ ${name}'s turn…`;
         }
-        ui.turnIndicator.style.color = mine ? "var(--gold)" : "var(--text)";
+        ui.turnIndicator.style.color = mine ? "var(--primary)" : "var(--text)";
         this.updateJackHint();
     }
 

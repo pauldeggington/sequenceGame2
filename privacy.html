@@ -8,7 +8,7 @@
     <meta name="description" content="Privacy Policy for Very Wild Jacks online board game.">
     <link rel="stylesheet" href="style.css">
     <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap"
         rel="stylesheet">
     <style>
         .page-container {
@@ -19,19 +19,21 @@
         }
 
         .page-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: linear-gradient(180deg, rgba(30, 30, 50, 0.5) 0%, rgba(15, 15, 25, 0.7) 100%);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(138, 43, 226, 0.2);
+            border-top: 1px solid rgba(138, 43, 226, 0.4);
             border-radius: 16px;
             padding: 40px;
             color: var(--text);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), inset 0 1px 10px rgba(138, 43, 226, 0.05);
         }
 
         .page-card h1 {
-            font-family: 'Playfair Display', serif;
+            font-family: 'Outfit', sans-serif;
             font-size: 2.2rem;
-            background: linear-gradient(135deg, var(--gold), #f0c27f);
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -39,16 +41,17 @@
         }
 
         .page-card h2 {
-            color: var(--gold);
+            color: var(--primary-light);
             font-size: 1.3rem;
             margin-top: 30px;
             margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(179, 102, 255, 0.2);
         }
 
         .page-card p,
         .page-card li {
             line-height: 1.7;
-            color: rgba(255, 255, 255, 0.8);
+            color: rgba(255, 255, 255, 0.85);
             margin-bottom: 10px;
         }
 
@@ -57,24 +60,28 @@
         }
 
         .page-card a {
-            color: var(--gold);
+            color: var(--primary-light);
             text-decoration: none;
+            transition: text-shadow 0.2s, color 0.2s;
         }
 
         .page-card a:hover {
             text-decoration: underline;
+            text-shadow: 0 0 8px rgba(179, 102, 255, 0.4);
         }
 
         .back-link {
             display: inline-block;
             margin-bottom: 20px;
-            color: var(--gold);
+            color: var(--primary-light);
             text-decoration: none;
             font-weight: 600;
+            transition: transform 0.2s, text-shadow 0.2s;
         }
 
         .back-link:hover {
-            text-decoration: underline;
+            transform: translateX(-3px);
+            text-shadow: 0 0 8px rgba(179, 102, 255, 0.5);
         }
 
         .last-updated {
