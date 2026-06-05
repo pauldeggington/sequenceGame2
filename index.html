@@ -16,7 +16,7 @@
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Very Wild Jacks</title>
     <meta name="description" content="Play the Very Wild Jacks board game online with friends!.">
-    <link rel="stylesheet" href="style.css?v=163">
+    <link rel="stylesheet" href="style.css?v=167">
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap"
         rel="stylesheet">
@@ -61,7 +61,11 @@
                 <div id="setup-screen">
                     <div class="setup-split">
                         <div class="setup-card glass-panel">
-                            <h1 href="https://pauldeggington.github.io/sequenceGame2">Very Wild Jacks</h1>
+                            <h1 class="logo-title">
+                                <a href="https://pauldeggington.github.io/sequenceGame2">
+                                    <img src="VeryWildJacksLogo.svg?v=2" alt="Very Wild Jacks" class="setup-logo">
+                                </a>
+                            </h1>
                             <div class="setup-section name-section">
                                 <label for="player-name" class="name-label">Your Name</label>
                                 <input id="player-name" type="text" placeholder="Enter your name..." maxlength="20"
@@ -228,12 +232,10 @@
                     </div>
 
                     <div id="game-container">
-                        <header
-                            style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                            <div>
-                                <h1 id="game-title" style="cursor: pointer;">Very Wild Jacks</h1>
+                        <header class="game-header">
+                            <div class="header-left">
                                 <div id="my-team-indicator"
-                                    style="font-size: 1.1em; margin-top: 5px; color: var(--primary);">You are: <strong
+                                    style="font-size: 1.1em; color: var(--primary);">You are: <strong
                                         id="my-team-name"></strong></div>
 
                                 <div id="host-dropped-warning" style="display:none;">
@@ -245,18 +247,27 @@
                                     </button>
                                 </div>
                             </div>
-                            <div id="connection-status" class="glass-panel"
-                                style="display: flex; gap: 15px; align-items: center;">
-                                <button id="mute-btn" class="icon-button" aria-label="Toggle Sound"
-                                    style="background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; padding: 0 5px;">
-                                    🔊
-                                </button>
-                                <div class="turn-indicator" id="turn-indicator">Waiting...</div>
-                                <div class="player-chips">
-                                    <div class="chip-count red">🔴 <span id="red-score">0</span></div>
-                                    <div class="chip-count blue">🔵 <span id="blue-score">0</span></div>
-                                    <div class="chip-count green" id="green-score-wrap" style="display:none">🟢 <span
-                                            id="green-score">0</span></div>
+                            
+                            <div class="header-center">
+                                <h1 id="game-title" style="cursor: pointer;">
+                                    <img src="VeryWildJacksLogo.svg?v=2" alt="Very Wild Jacks" class="header-logo">
+                                </h1>
+                            </div>
+                            
+                            <div class="header-right">
+                                <div id="connection-status" class="glass-panel"
+                                    style="display: flex; gap: 15px; align-items: center;">
+                                    <button id="mute-btn" class="icon-button" aria-label="Toggle Sound"
+                                        style="background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; padding: 0 5px;">
+                                        🔊
+                                    </button>
+                                    <div class="turn-indicator" id="turn-indicator">Waiting...</div>
+                                    <div class="player-chips">
+                                        <div class="chip-count red">🔴 <span id="red-score">0</span></div>
+                                        <div class="chip-count blue">🔵 <span id="blue-score">0</span></div>
+                                        <div class="chip-count green" id="green-score-wrap" style="display:none">🟢 <span
+                                                id="green-score">0</span></div>
+                                    </div>
                                 </div>
                             </div>
                         </header>
