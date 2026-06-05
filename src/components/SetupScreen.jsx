@@ -16,11 +16,10 @@ export default function SetupScreen() {
                                     autocomplete="off" />
                             </div>
 
-                            <div id="create-game-section" className="setup-section" style={{ display: 'none' }}>
-                                <button id="create-game-btn" className="premium-button"
-                                    style={{ width: '100%', marginBottom: '10px' }}>Create
+                            <div id="create-game-section" className="setup-section" style={{ display: 'none', flexDirection: 'column', gap: '15px', alignItems: 'center' }}>
+                                <button id="create-game-btn" className="premium-button">Create
                                     Multiplayer Game</button>
-                                <button id="play-single-btn" className="premium-button secondary" style={{ width: '100%' }}>Play
+                                <button id="play-single-btn" className="premium-button secondary">Play
                                     By Yourself</button>
                             </div>
 
@@ -79,7 +78,7 @@ export default function SetupScreen() {
                             </button>
 
                             <button id="setup-back-btn" className="premium-button secondary"
-                                style={{ display: 'none', width: '100%', marginTop: '15px' }}>
+                                style={{ display: 'none', marginTop: '15px' }}>
                                 Back to Menu
                             </button>
 

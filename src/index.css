@@ -168,11 +168,33 @@
         flex: 1;
         min-width: 300px;
         text-align: center;
-        padding: 30px 25px;
+        padding: 20px;
         background: linear-gradient(180deg, #091c38 0%, #041022 100%);
         border: 2px solid var(--primary);
         border-radius: 20px;
         box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 25px rgba(0, 210, 255, 0.3), inset 0 0 15px rgba(0, 210, 255, 0.15);
+    }
+
+    .instructions-wrapper {
+        max-width: 1000px;
+        width: 100%;
+        margin: 20px auto;
+    }
+
+    .instructions-desktop, .instructions-mobile {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+
+    @media (max-width: 768px) {
+        .instructions-desktop { display: none; }
+        .instructions-mobile { display: block; }
+    }
+
+    @media (min-width: 769px) {
+        .instructions-desktop { display: block; }
+        .instructions-mobile { display: none; }
     }
 
     .setup-card h1 {
@@ -327,9 +349,7 @@
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 2px;
-        background: linear-gradient(to bottom, #ffe866, #ff9900);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: #ffffff;
         text-shadow: 0 0 10px rgba(0, 210, 255, 0.4);
         margin-bottom: 12px;
         -webkit-text-stroke: 0.5px rgba(0, 210, 255, 0.8);
@@ -349,7 +369,7 @@
 
     /* Name input */
     .name-section {
-        text-align: left;
+        text-align: center;
     }
 
     .name-label {
@@ -364,18 +384,21 @@
 
     #player-name {
         width: 100%;
+        max-width: 250px;
+        margin: 0 auto;
+        display: block;
         background: rgba(0, 0, 0, 0.4);
         border: 1px solid var(--glass-border);
         border-radius: 8px;
         color: #fff;
         padding: 10px 14px;
         font-size: 16px;
-        /* 16px prevents iOS Safari from auto-zooming on focus */
         font-family: 'Outfit', sans-serif;
         outline: none;
         transition: border-color 0.2s, box-shadow 0.2s;
         appearance: none;
         -webkit-appearance: none;
+        text-align: center;
     }
 
     #player-name:focus {
@@ -1318,9 +1341,7 @@
     .turn-overlay-text {
         font-size: clamp(2rem, 8vw, 4rem);
         font-weight: 900;
-        background: linear-gradient(to bottom, #ffe866, #ff9900);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: #ffffff;
         text-shadow: 0 0 30px rgba(0, 210, 255, 0.6), 0 4px 20px rgba(0, 0, 0, 0.5);
         -webkit-text-stroke: 1px rgba(0, 210, 255, 0.8);
         animation: turn-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
