@@ -536,12 +536,19 @@ class SequenceGame {
 
 
         if (roomId) {
-            this.isHost = false;
-            ui.status.innerText = "Joining room...";
-            localStorage.setItem('sequence_roomID', roomId);
-            localStorage.setItem('sequence_isHost', 'false');
-            document.getElementById('setup-back-btn').style.display = 'block';
-            this.startSession(roomId, false);
+            if (savedRoomId === roomId && savedIsHost === 'true') {
+                this.isHost = true;
+                ui.status.innerText = "Re-hosting room...";
+                document.getElementById('setup-back-btn').style.display = 'block';
+                this.startSession(roomId, true);
+            } else {
+                this.isHost = false;
+                ui.status.innerText = "Joining room...";
+                localStorage.setItem('sequence_roomID', roomId);
+                localStorage.setItem('sequence_isHost', 'false');
+                document.getElementById('setup-back-btn').style.display = 'block';
+                this.startSession(roomId, false);
+            }
         } else if (savedRoomId && savedIsHost === 'true') {
             roomId = savedRoomId;
             window.location.hash = roomId;
@@ -2962,5 +2969,4 @@ class SequenceGame {
     }
 }
 
-// ── Boot ──
-window.game = new SequenceGame();
+export default SequenceGame;

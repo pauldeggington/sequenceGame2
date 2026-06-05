@@ -6,10 +6,24 @@ import './index.css';
 export default function App() {
   useEffect(() => {
     // The game engine will attach to the DOM nodes here.
-    // We will dynamically import the game logic so it runs AFTER the React DOM is painted.
+    let gameInstance = null;
+    
     import('./engine/game.js').then((module) => {
-      console.log("Game engine loaded into React.");
+      const SequenceGame = module.default;
+      gameInstance = new SequenceGame();
+      window.game = gameInstance;
+      console.log("Game engine loaded and bound to React DOM.");
     }).catch(err => console.error("Failed to load game engine:", err));
+
+    return () => {
+      // Cleanup the game instance if React unmounts to prevent zombie PeerJS connections
+      if (gameInstance) {
+        if (gameInstance.peer && !gameInstance.peer.destroyed) {
+          gameInstance.peer.destroy();
+        }
+        delete window.game;
+      }
+    };
   }, []);
 
   return (
