@@ -34,11 +34,14 @@ export default function SetupScreen() {
                 <h3>Game Options</h3>
                 <div className="options-row"
                     style={{ display: 'flex', flexDirection: 'column', gap: '15px', alignItems: 'center', width: '100%' }}>
-                    <label className="hint-toggle" style={{ justifyContent: 'center', width: '100%' }}>
-                        <input type="checkbox" id="show-hints-toggle" />
-                        <span className="toggle-switch"></span>
+                    <div className="layout-select-container"
+                        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', width: '100%' }}>
                         <span className="toggle-label">Show Board Hints</span>
-                    </label>
+                        <div className="team-buttons" id="hint-buttons">
+                            <button className="team-btn selected" id="hint-on-btn">On</button>
+                            <button className="team-btn" id="hint-off-btn">Off</button>
+                        </div>
+                    </div>
                     <label className="hint-toggle"
                         style={{ justifyContent: 'center', width: '100%', display: 'none' }}>
                         <input type="checkbox" id="wipe-toggle" />
