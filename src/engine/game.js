@@ -310,7 +310,7 @@ class SequenceGame {
         this.myName = localStorage.getItem('sequence_playerName') || '';
         this._takeoverRetries = 0;
         this.started = false;
-        this.hintsEnabled = false;
+        this.hintsEnabled = true;
         this.hoveredCardIndex = null;
         this.hands = {};         // For reconnects, host saves all hands dealt
         this.hostStateBackup = null; // Backup of the game state for migration
@@ -482,10 +482,10 @@ class SequenceGame {
         }
 
         // Team selection buttons
-        document.querySelectorAll('.team-btn').forEach(btn => {
+        document.querySelectorAll('.team-btn[data-teams]').forEach(btn => {
             btn.onclick = () => {
                 this.teamCount = parseInt(btn.dataset.teams);
-                document.querySelectorAll('.team-btn').forEach(b => b.classList.toggle('selected', b === btn));
+                document.querySelectorAll('.team-btn[data-teams]').forEach(b => b.classList.toggle('selected', b === btn));
                 this.updateTeamLabels(ui.teamLabels);
                 this.broadcast('config', { teamCount: this.teamCount });
             };
@@ -839,7 +839,7 @@ class SequenceGame {
         } else if (type === 'config' && !this.isHost) {
             if (data.teamCount) {
                 this.teamCount = data.teamCount;
-                document.querySelectorAll('.team-btn').forEach(btn => {
+                document.querySelectorAll('.team-btn[data-teams]').forEach(btn => {
                     btn.classList.toggle('selected', parseInt(btn.dataset.teams) === this.teamCount);
                 });
                 this.updateTeamLabels(ui ? ui.teamLabels : null);
@@ -863,7 +863,7 @@ class SequenceGame {
                 ui.teamCfg.style.display = 'block';
                 ui.playerList.style.display = 'block';
                 // Disable inputs for peers
-                document.querySelectorAll('.team-btn').forEach(b => b.style.pointerEvents = 'none');
+                document.querySelectorAll('.team-btn[data-teams]').forEach(b => b.style.pointerEvents = 'none');
                 const hintOnBtn = document.getElementById('hint-on-btn');
                 const hintOffBtn = document.getElementById('hint-off-btn');
                 if (hintOnBtn) hintOnBtn.style.pointerEvents = 'none';
