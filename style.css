@@ -2018,3 +2018,45 @@ input[type="checkbox"]#wipe-toggle:checked+.toggle-switch::after {
     color: var(--primary-light);
     text-shadow: 0 0 8px rgba(179, 102, 255, 0.6);
 }
+
+/* ══════════════════════════════════════════
+   HOW TO PLAY RESPONSIVE IMAGES
+   ══════════════════════════════════════════ */
+.instructions-wrapper {
+    margin: 30px auto;
+    max-width: 1000px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 0 10px;
+}
+
+.instructions-desktop,
+.instructions-mobile {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 20px;
+    border: 1px solid rgba(138, 43, 226, 0.3);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+.instructions-desktop {
+    display: block;
+}
+
+.instructions-mobile {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .instructions-desktop {
+        display: none;
+    }
+    
+    .instructions-mobile {
+        display: block;
+        max-width: 480px;
+        margin: 0 auto;
+    }
+}

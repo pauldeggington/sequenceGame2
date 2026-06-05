@@ -212,6 +212,20 @@ class SoundManager {
         this.playTone(659.25, 'square', 1.5, 0.6, delay);
         this.playTone(783.99, 'square', 1.5, 0.6, delay);
     }
+
+    playLose() {
+        // Descending sad retro tones
+        let delay = 0;
+        const notes = [392.00, 370.00, 349.23, 311.13]; // G4, F#4, F4, Eb4
+        for (let i = 0; i < notes.length; i++) {
+            const duration = i === notes.length - 1 ? 0.8 : 0.25;
+            this.playTone(notes[i], 'sawtooth', duration, 0.6, delay);
+            delay += 0.3;
+        }
+        // Low dissonant hum at the end
+        this.playTone(207.65, 'sine', 1.0, 0.5, delay - 0.1);
+        this.playTone(220.00, 'sine', 1.0, 0.5, delay - 0.1);
+    }
 }
 
 const sounds = new SoundManager();
@@ -2800,7 +2814,11 @@ class SequenceGame {
     showWinPopup(winner) {
         const ui = this.ui;
         if (ui.gameOverOverlay && ui.winnerDisplay) {
+            let playerWon = false;
+            let isDraw = false;
+
             if (winner === 'CATS') {
+                isDraw = true;
                 ui.winnerDisplay.innerText = "CAT'S GAME!";
                 ui.winnerDisplay.style.color = "#ecf0f1";
                 ui.winnerDisplay.style.textShadow = `0 0 30px rgba(255,255,255,0.5), 0 4px 20px rgba(0,0,0,0.5)`;
@@ -2814,12 +2832,32 @@ class SequenceGame {
                 ui.winnerDisplay.innerText = `${winner.toUpperCase()} TEAM WINS!`;
                 ui.winnerDisplay.style.color = colorHex;
                 ui.winnerDisplay.style.textShadow = `0 0 30px ${colorHex}99, 0 4px 20px rgba(0,0,0,0.5)`;
+                
+                if (this.myColor && this.myColor === teamColor) {
+                    playerWon = true;
+                }
+
                 if (document.getElementById('win-subtitle')) {
-                    document.getElementById('win-subtitle').innerText = "Congratulations!";
+                    if (this.myColor) {
+                        document.getElementById('win-subtitle').innerText = playerWon ? "Congratulations! You Won!" : "Better luck next time! Defeat.";
+                    } else {
+                        document.getElementById('win-subtitle').innerText = "Game Over!";
+                    }
                 }
             }
 
-            sounds.playWin();
+            if (isDraw) {
+                sounds.playWin();
+            } else if (this.myColor) {
+                if (playerWon) {
+                    sounds.playWin();
+                } else {
+                    sounds.playLose();
+                }
+            } else {
+                sounds.playWin();
+            }
+
             ui.gameOverOverlay.style.display = 'flex';
         }
     }
@@ -2925,4 +2963,4 @@ class SequenceGame {
 }
 
 // ── Boot ──
-new SequenceGame();
+window.game = new SequenceGame();
