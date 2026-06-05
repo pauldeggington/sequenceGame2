@@ -3,7 +3,7 @@ import React from 'react';
 export default function SetupScreen() {
   return (
     <div id="setup-screen">
-        <div className="setup-card glass-panel">
+        <div className="setup-card glass-panel" style={{ maxWidth: '920px', width: '92%', margin: '0 auto 20px auto' }}>
             <h1 className="logo-title">
                 <a href="https://pauldeggington.github.io/sequenceGame2">
                     <img src="VeryWildJacksLogo.svg?v=2" alt="Very Wild Jacks" className="setup-logo" />
