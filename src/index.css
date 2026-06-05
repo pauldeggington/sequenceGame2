@@ -1,13 +1,14 @@
 :root {
-    --bg-color: #0b0c16;
-    --board-bg: rgba(25, 25, 45, 0.6);
-    --primary: #8a2be2;
-    --primary-light: #b366ff;
-    --red-chip: #ff3366;
+    --bg-color: #051429;
+    --board-bg: rgba(10, 30, 60, 0.8);
+    --primary: #00d2ff;
+    --primary-light: #5de1e6;
+    --red-chip: #ff3333;
     --blue-chip: #33ccff;
     --green-chip: #00ff99;
-    --glass: rgba(20, 20, 40, 0.5);
-    --glass-border: rgba(138, 43, 226, 0.3);
+    --gold-accent: #ffd700;
+    --glass: rgba(10, 35, 70, 0.7);
+    --glass-border: rgba(0, 210, 255, 0.5);
     --text: #ffffff;
 }
 
@@ -38,7 +39,7 @@ body::before {
     left: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle at 50% 30%, rgba(138, 43, 226, 0.15) 0%, transparent 50%);
+    background: radial-gradient(circle at 50% 30%, rgba(0, 210, 255, 0.15) 0%, transparent 50%);
     pointer-events: none;
     z-index: -2;
 }
@@ -67,7 +68,7 @@ body::before {
 .bg-card,
 .bg-token {
     position: absolute;
-    box-shadow: 0 10px 40px rgba(138, 43, 226, 0.2);
+    box-shadow: 0 10px 40px rgba(0, 210, 255, 0.2);
     filter: blur(4px) brightness(1.2);
     animation: float var(--duration) ease-in-out infinite var(--delay);
     will-change: transform;
@@ -168,13 +169,12 @@ body::before {
     min-width: 300px;
     text-align: center;
     padding: 30px 25px;
-    background: linear-gradient(180deg, rgba(30, 30, 50, 0.6) 0%, rgba(15, 15, 25, 0.8) 100%);
+    background: linear-gradient(180deg, rgba(10, 30, 60, 0.8) 0%, rgba(5, 15, 30, 0.95) 100%);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(138, 43, 226, 0.2);
-    border-top: 1px solid rgba(138, 43, 226, 0.5);
+    border: 2px solid var(--primary);
     border-radius: 20px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), inset 0 2px 20px rgba(138, 43, 226, 0.1);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 25px rgba(0, 210, 255, 0.3), inset 0 0 15px rgba(0, 210, 255, 0.15);
 }
 
 .setup-card h1 {
@@ -189,14 +189,14 @@ body::before {
     height: auto;
     display: block;
     margin: 5px auto 10px;
-    filter: drop-shadow(0 4px 10px rgba(138, 43, 226, 0.35));
+    filter: drop-shadow(0 4px 10px rgba(0, 210, 255, 0.35));
     animation: logo-pulse 4s ease-in-out infinite;
     transition: filter 0.3s ease;
 }
 
 .setup-logo:hover {
     animation-play-state: paused;
-    filter: drop-shadow(0 6px 16px rgba(138, 43, 226, 0.55));
+    filter: drop-shadow(0 6px 16px rgba(0, 210, 255, 0.55));
 }
 
 @keyframes logo-pulse {
@@ -323,12 +323,16 @@ body::before {
 }
 
 .setup-section h3 {
-    font-size: 0.85rem;
-    font-weight: 600;
+    font-size: 1.1rem;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--primary-light);
+    letter-spacing: 2px;
+    background: linear-gradient(to bottom, #ffe866, #ff9900);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 10px rgba(0, 210, 255, 0.4);
     margin-bottom: 12px;
+    -webkit-text-stroke: 0.5px rgba(0, 210, 255, 0.8);
 }
 
 #setup-status {
@@ -376,7 +380,7 @@ body::before {
 
 #player-name:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 0 2px rgba(138, 43, 226, 0.25);
+    box-shadow: 0 0 0 2px rgba(0, 210, 255, 0.25);
 }
 
 #player-name::placeholder {
@@ -402,7 +406,7 @@ body::before {
 
 #invite-url:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 0 2px rgba(138, 43, 226, 0.25);
+    box-shadow: 0 0 0 2px rgba(0, 210, 255, 0.25);
 }
 
 /* Team buttons */
@@ -432,7 +436,7 @@ body::before {
 
 .team-btn.selected {
     border-color: var(--primary);
-    background: rgba(138, 43, 226, 0.15);
+    background: rgba(0, 210, 255, 0.15);
     color: var(--primary-light);
 }
 
@@ -724,24 +728,23 @@ header h1 {
     width: 67px;
     display: block;
     margin: 0;
-    filter: drop-shadow(0 2px 5px rgba(138, 43, 226, 0.25));
+    filter: drop-shadow(0 2px 5px rgba(0, 210, 255, 0.25));
     transition: transform 0.2s ease, filter 0.2s ease;
 }
 
 .header-logo:hover {
     transform: scale(1.03);
-    filter: drop-shadow(0 4px 8px rgba(138, 43, 226, 0.45));
+    filter: drop-shadow(0 4px 8px rgba(0, 210, 255, 0.45));
 }
 
 .glass-panel {
-    background: linear-gradient(180deg, rgba(30, 30, 50, 0.5) 0%, rgba(15, 15, 25, 0.7) 100%);
+    background: linear-gradient(180deg, rgba(10, 30, 60, 0.7) 0%, rgba(5, 15, 30, 0.9) 100%);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(138, 43, 226, 0.2);
-    border-top: 1px solid rgba(138, 43, 226, 0.4);
+    border: 2px solid var(--primary);
     border-radius: 16px;
     padding: 8px 12px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), inset 0 1px 10px rgba(138, 43, 226, 0.05);
+    box-shadow: 0 0 20px rgba(0, 210, 255, 0.4), inset 0 0 15px rgba(0, 210, 255, 0.2);
 }
 
 #host-dropped-warning {
@@ -838,7 +841,7 @@ header h1 {
     height: auto;
     background: var(--board-bg);
     border-radius: 8px;
-    border: 1px solid rgba(138, 43, 226, 0.15);
+    border: 1px solid rgba(0, 210, 255, 0.15);
     box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.5), 0 10px 25px rgba(0, 0, 0, 0.4);
     padding: 4px;
     position: relative;
@@ -1223,8 +1226,8 @@ header h1 {
 
 /* Jack hint bar */
 .jack-hint-panel {
-    background: rgba(138, 43, 226, 0.15);
-    border: 1px solid rgba(138, 43, 226, 0.45);
+    background: rgba(0, 210, 255, 0.15);
+    border: 1px solid rgba(0, 210, 255, 0.45);
     border-radius: 6px;
     padding: 4px 8px;
     font-size: 0.75rem;
@@ -1316,8 +1319,11 @@ header h1 {
 .turn-overlay-text {
     font-size: clamp(2rem, 8vw, 4rem);
     font-weight: 900;
-    color: var(--primary);
-    text-shadow: 0 0 30px rgba(138, 43, 226, 0.6), 0 4px 20px rgba(0, 0, 0, 0.5);
+    background: linear-gradient(to bottom, #ffe866, #ff9900);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 30px rgba(0, 210, 255, 0.6), 0 4px 20px rgba(0, 0, 0, 0.5);
+    -webkit-text-stroke: 1px rgba(0, 210, 255, 0.8);
     animation: turn-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -1346,37 +1352,39 @@ header h1 {
 
 /* Buttons */
 .premium-button {
-    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-    border: none;
+    background: linear-gradient(135deg, #0099cc 0%, #00d2ff 100%);
+    border: 1px solid rgba(255, 255, 255, 0.4);
     color: #ffffff;
     padding: 12px 28px;
     border-radius: 50px;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s;
-    box-shadow: 0 4px 15px rgba(106, 17, 203, 0.4), inset 0 2px 5px rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 15px rgba(0, 210, 255, 0.4), inset 0 2px 5px rgba(255, 255, 255, 0.3);
     font-size: 0.95rem;
     letter-spacing: 0.5px;
     appearance: none;
     -webkit-appearance: none;
     touch-action: manipulation;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 .premium-button:hover {
     transform: scale(1.03);
-    box-shadow: 0 6px 20px rgba(106, 17, 203, 0.6);
+    box-shadow: 0 6px 20px rgba(0, 210, 255, 0.7), inset 0 2px 5px rgba(255, 255, 255, 0.5);
+    background: linear-gradient(135deg, #00aadd 0%, #33e0ff 100%);
 }
 
 .premium-button.secondary {
-    background: transparent;
-    border: 1px solid var(--primary);
-    color: var(--primary);
-    box-shadow: none;
+    background: rgba(10, 30, 60, 0.8);
+    border: 2px solid var(--primary);
+    color: var(--text);
+    box-shadow: 0 0 10px rgba(0, 210, 255, 0.3);
 }
 
 .premium-button.secondary:hover {
-    background: rgba(138, 43, 226, 0.1);
-    box-shadow: 0 0 15px rgba(138, 43, 226, 0.2);
+    background: rgba(0, 210, 255, 0.15);
+    box-shadow: 0 0 20px rgba(0, 210, 255, 0.6);
 }
 
 /* ══════════════════════════════════════════
@@ -1709,7 +1717,7 @@ input[type="checkbox"]#wipe-toggle:checked+.toggle-switch::after {
 }
 
 .chat-opt:hover {
-    background: rgba(138, 43, 226, 0.25);
+    background: rgba(0, 210, 255, 0.25);
     transform: scale(1.02);
 }
 
@@ -2002,7 +2010,7 @@ input[type="checkbox"]#wipe-toggle:checked+.toggle-switch::after {
     background: rgba(20, 20, 35, 0.7);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border-top: 1px solid rgba(138, 43, 226, 0.2);
+    border-top: 1px solid rgba(0, 210, 255, 0.2);
 }
 
 .site-footer a {
@@ -2037,7 +2045,7 @@ input[type="checkbox"]#wipe-toggle:checked+.toggle-switch::after {
     height: auto;
     display: block;
     border-radius: 20px;
-    border: 1px solid rgba(138, 43, 226, 0.3);
+    border: 1px solid rgba(0, 210, 255, 0.3);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
 }
 
