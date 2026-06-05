@@ -491,11 +491,21 @@ class SequenceGame {
             };
         });
 
-        // Hints toggle
-        const hintsToggle = document.getElementById('show-hints-toggle');
-        if (hintsToggle) {
-            hintsToggle.onchange = () => {
-                this.hintsEnabled = hintsToggle.checked;
+        // Hints buttons
+        const hintOnBtn = document.getElementById('hint-on-btn');
+        const hintOffBtn = document.getElementById('hint-off-btn');
+        if (hintOnBtn && hintOffBtn) {
+            const updateHintBtns = (enabled) => {
+                this.hintsEnabled = enabled;
+                hintOnBtn.classList.toggle('selected', enabled);
+                hintOffBtn.classList.toggle('selected', !enabled);
+            };
+            hintOnBtn.onclick = () => {
+                updateHintBtns(true);
+                this.broadcast('config', { hintsEnabled: this.hintsEnabled });
+            };
+            hintOffBtn.onclick = () => {
+                updateHintBtns(false);
                 this.broadcast('config', { hintsEnabled: this.hintsEnabled });
             };
         }
@@ -836,8 +846,10 @@ class SequenceGame {
             }
             if (data.hintsEnabled !== undefined) {
                 this.hintsEnabled = data.hintsEnabled;
-                const toggle = document.getElementById('show-hints-toggle');
-                if (toggle) toggle.checked = this.hintsEnabled;
+                const hintOnBtn = document.getElementById('hint-on-btn');
+                const hintOffBtn = document.getElementById('hint-off-btn');
+                if (hintOnBtn) hintOnBtn.classList.toggle('selected', this.hintsEnabled);
+                if (hintOffBtn) hintOffBtn.classList.toggle('selected', !this.hintsEnabled);
             }
             if (data.wipeEnabled !== undefined) {
                 this.wipeEnabled = data.wipeEnabled;
@@ -852,8 +864,10 @@ class SequenceGame {
                 ui.playerList.style.display = 'block';
                 // Disable inputs for peers
                 document.querySelectorAll('.team-btn').forEach(b => b.style.pointerEvents = 'none');
-                const toggle = document.getElementById('show-hints-toggle');
-                if (toggle) toggle.disabled = true;
+                const hintOnBtn = document.getElementById('hint-on-btn');
+                const hintOffBtn = document.getElementById('hint-off-btn');
+                if (hintOnBtn) hintOnBtn.style.pointerEvents = 'none';
+                if (hintOffBtn) hintOffBtn.style.pointerEvents = 'none';
                 if (this.ui.wipeToggle) this.ui.wipeToggle.disabled = true;
                 if (this.ui.layoutDefaultBtn) this.ui.layoutDefaultBtn.disabled = true;
                 if (this.ui.layoutRandomBtn) this.ui.layoutRandomBtn.disabled = true;
