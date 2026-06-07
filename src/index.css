@@ -1164,16 +1164,17 @@ header h1 {
 .footer-row {
     display: flex;
     gap: 10px;
-    align-items: stretch;
+    align-items: center;
     width: 100%;
-    height: 44px;
+    min-height: 44px;
     margin-top: 10px;
 }
 
 /* Game log */
 #game-log {
     flex: 1;
-    height: 100%;
+    height: auto;
+    aspect-ratio: 2002 / 612;
     overflow-y: auto;
     font-size: 1.1rem;
     padding: 10px 15px;
@@ -1375,19 +1376,15 @@ header h1 {
     }
 
     .footer-row {
-        height: 48px;
+        min-height: 48px;
         margin-bottom: 25px;
         /* Lift row up from the very bottom for better reach */
     }
 
     #game-log {
-        height: 100%;
+        height: auto;
         flex: 1;
         /* Allow log to take remain space on mobile */
-    }
-
-    #emoji-picker-container {
-        flex: 0 0 20%;
     }
 
     #emoji-menu {
