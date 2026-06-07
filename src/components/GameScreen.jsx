@@ -92,7 +92,7 @@ export default function GameScreen() {
                   
                   <div id="emoji-picker-container">
                       <button id="emoji-trigger">
-                          <img src="/EmojiSelector.png" alt="Emoji Menu" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                          <img src="/EmojiSelector.png" alt="Emoji Menu" />
                       </button>
                       <div id="emoji-menu"
                           style={{ display: 'none', position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '200px', padding: '12px', borderRadius: '12px', background: 'rgba(20, 20, 35, 0.98)', border: '1px solid var(--primary)', boxShadow: '0 8px 32px rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: '10000' }}>
