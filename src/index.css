@@ -1371,9 +1371,39 @@ header h1 {
     }
 
     #hand-panel {
-        padding-top: 14px;
+        padding-top: 18px;
         padding-bottom: 8px;
         /* Lift hand slightly */
+    }
+
+    .hand {
+        gap: 0;
+    }
+
+    .card {
+        width: clamp(55px, 15vw, 85px);
+    }
+
+    .card + .card {
+        margin-left: -20px;
+    }
+
+    .card:hover,
+    .card:active,
+    .card.selected {
+        z-index: 10;
+        transform: translateY(-12px);
+    }
+
+    .jack-badge,
+    .dead-badge {
+        bottom: auto;
+        right: auto;
+        top: -6px;
+        left: -6px;
+        font-size: 1rem;
+        padding: 2px 6px;
+        box-shadow: 2px 2px 4px rgba(0,0,0,0.6);
     }
 
     .footer-row {

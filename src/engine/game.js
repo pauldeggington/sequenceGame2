@@ -1506,6 +1506,7 @@ class SequenceGame {
                     e.stopPropagation();
                     this.sendEmoji(opt.innerText);
                     this.showEmojiFloat(opt.innerText);
+                    ui.emojiMenu.style.display = 'none';
                 };
             });
             document.querySelectorAll('.chat-opt').forEach(opt => {
@@ -1514,6 +1515,7 @@ class SequenceGame {
                     const msg = opt.getAttribute('data-msg');
                     this.sendChat(msg);
                     this.showChatFloat(msg, this.myColor || 'red');
+                    ui.emojiMenu.style.display = 'none';
                 };
             });
             document.addEventListener('click', () => ui.emojiMenu.style.display = 'none');
