@@ -85,7 +85,7 @@ export default function GameScreen() {
               </div>
 
               <div className="footer-row">
-                  <div id="game-log" className="glass-panel">
+                  <div id="game-log">
                       <div id="log-content"></div>
                   </div>
 
