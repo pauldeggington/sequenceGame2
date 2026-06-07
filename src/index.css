@@ -1397,13 +1397,13 @@ header h1 {
 
     .jack-badge,
     .dead-badge {
-        bottom: auto;
+        top: auto;
         right: auto;
-        top: -6px;
+        bottom: -6px;
         left: -6px;
         font-size: 1rem;
         padding: 2px 6px;
-        box-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+        box-shadow: 2px -2px 4px rgba(0,0,0,0.6);
     }
 
     .footer-row {

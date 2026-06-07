@@ -1636,7 +1636,8 @@ class SequenceGame {
         if (this.hintsEnabled && !currentJackMode) {
             const selectedCard = this.selectedCardIndex !== null ? this.hand[this.selectedCardIndex] : null;
             const hoveredCard = this.hoveredCardIndex !== null ? this.hand[this.hoveredCardIndex] : null;
-            if ((val === selectedCard || val === hoveredCard) && !chip) highlight = ' highlight-hint';
+            const targetHintCard = hoveredCard !== null ? hoveredCard : selectedCard;
+            if (val === targetHintCard && !chip) highlight = ' highlight-hint';
         }
 
         return `${val === 'FREE' ? ' free' : ''}${highlight}`;
