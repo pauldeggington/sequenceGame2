@@ -1587,6 +1587,7 @@ input[type="checkbox"]#wipe-toggle:checked+.toggle-switch::after {
 #emoji-picker-container {
     flex: 0 0 60px;
     max-width: 60px;
+    height: 60px;
     position: relative;
     z-index: 2000;
 }
