@@ -1172,8 +1172,8 @@ header h1 {
 
 /* Game log */
 #game-log {
-    flex: 1;
-    height: auto;
+    flex: 0 0 auto;
+    height: 60px;
     aspect-ratio: 2002 / 612;
     overflow-y: auto;
     font-size: 1.1rem;
@@ -1382,9 +1382,9 @@ header h1 {
     }
 
     #game-log {
-        height: auto;
-        flex: 1;
-        /* Allow log to take remain space on mobile */
+        height: 60px;
+        flex: 0 0 auto;
+        /* Match desktop size */
     }
 
     #emoji-menu {
