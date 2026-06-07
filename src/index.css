@@ -1388,12 +1388,7 @@ header h1 {
         /* Match desktop size */
     }
 
-    #emoji-menu {
-        right: 0px !important;
-        left: auto !important;
-        bottom: 60px !important;
-        width: 160px !important;
-    }
+
 }
 
 /* Options/Toggle Styles */
@@ -1605,6 +1600,7 @@ input[type="checkbox"]#wipe-toggle:checked+.toggle-switch::after {
     background-repeat: no-repeat;
     cursor: pointer;
     transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    will-change: transform;
 }
 
 #emoji-trigger:hover {
@@ -1613,8 +1609,6 @@ input[type="checkbox"]#wipe-toggle:checked+.toggle-switch::after {
 
 #emoji-menu {
     position: absolute;
-    bottom: 60px;
-    right: 0;
     width: 160px;
     padding: 12px;
     border-radius: 12px;
