@@ -1598,7 +1598,11 @@ input[type="checkbox"]#wipe-toggle:checked+.toggle-switch::after {
     padding: 0;
     display: block;
     border: none;
-    background: url('/EmojiSelector.png') center/contain no-repeat transparent;
+    background-color: transparent;
+    background-image: url('/EmojiSelector.png');
+    background-position: center;
+    background-size: contain;
+    background-repeat: no-repeat;
     cursor: pointer;
     transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
