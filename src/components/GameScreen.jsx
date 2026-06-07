@@ -91,7 +91,9 @@ export default function GameScreen() {
 
                   
                   <div id="emoji-picker-container">
-                      <button id="emoji-trigger" className="glass-panel">😊</button>
+                      <button id="emoji-trigger">
+                          <img src="/EmojiSelector.png" alt="Emoji Menu" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                      </button>
                       <div id="emoji-menu"
                           style={{ display: 'none', position: 'absolute', bottom: '60px', right: '0', width: '200px', padding: '12px', borderRadius: '12px', background: 'rgba(20, 20, 35, 0.98)', border: '1px solid var(--primary)', boxShadow: '0 8px 32px rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: '10000' }}>
                           <div className="emoji-grid">
