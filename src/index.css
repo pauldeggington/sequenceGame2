@@ -20,7 +20,7 @@
 }
 
 body {
-    background-color: var(--bg-color);
+    background: radial-gradient(circle at 50% 20%, #163665 0%, #051021 70%, #020710 100%);
     color: var(--text);
     font-family: 'Outfit', sans-serif;
     height: 100dvh;
@@ -32,109 +32,12 @@ body {
     /* IE/Edge */
 }
 
-body::before {
-    content: '';
-    position: fixed;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle at 50% 30%, rgba(0, 210, 255, 0.15) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: -2;
-}
-
 /* Hide scrollbar for Chrome, Safari and Opera */
 *::-webkit-scrollbar {
     display: none;
 }
 
-/* ══════════════════════════════════════════
-   BACKGROUND CARDS
-   ══════════════════════════════════════════ */
-.bg-cards {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    z-index: -1;
-    pointer-events: none;
-    opacity: 0.15;
-    mix-blend-mode: screen;
-}
 
-.bg-card,
-.bg-token {
-    position: absolute;
-    box-shadow: 0 10px 40px rgba(0, 210, 255, 0.2);
-    filter: blur(4px) brightness(1.2);
-    animation: float var(--duration) ease-in-out infinite var(--delay);
-    will-change: transform;
-}
-
-/* Safari and iOS struggle with animated blur filters and continuous translation repaints */
-.reduced-fx .bg-card,
-.reduced-fx .bg-token {
-    filter: none;
-    animation: gentle-pulse var(--duration) ease-in-out infinite alternate var(--delay);
-}
-
-.bg-card {
-    width: clamp(80px, 15vw, 150px);
-    aspect-ratio: 2/3;
-    background-size: cover;
-    background-position: center;
-    border-radius: 8px;
-}
-
-.bg-token {
-    width: clamp(30px, 5vw, 60px);
-    height: clamp(30px, 5vw, 60px);
-    border-radius: 50%;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-}
-
-.bg-token.red {
-    background: var(--red-chip);
-}
-
-.bg-token.blue {
-    background: var(--blue-chip);
-}
-
-.bg-token.green {
-    background: var(--green-chip);
-}
-
-@keyframes float {
-    0% {
-        transform: translate(0, 0) rotate(var(--rot));
-    }
-
-    33% {
-        transform: translate(var(--x1), var(--y1)) rotate(calc(var(--rot) + 10deg));
-    }
-
-    66% {
-        transform: translate(var(--x2), var(--y2)) rotate(calc(var(--rot) - 10deg));
-    }
-
-    100% {
-        transform: translate(0, 0) rotate(var(--rot));
-    }
-}
-
-@keyframes gentle-pulse {
-    0% {
-        transform: rotate(var(--rot)) scale(0.95);
-    }
-
-    100% {
-        transform: rotate(calc(var(--rot) + 8deg)) scale(1.05);
-    }
-}
 
 /* ══════════════════════════════════════════
    SETUP SCREEN

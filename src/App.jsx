@@ -28,7 +28,6 @@ export default function App() {
 
   return (
     <>
-      <div id="bg-cards" className="bg-cards"></div>
       <div id="global-layout">
         <div className="sidebar-wrapper">
           <aside className="sidebar sidebar-left">
