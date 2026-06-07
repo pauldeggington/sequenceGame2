@@ -1602,10 +1602,13 @@ input[type="checkbox"]#wipe-toggle:checked+.toggle-switch::after {
     background: transparent;
     cursor: pointer;
     transition: transform 0.2s ease;
+    backface-visibility: hidden;
+    transform: translateZ(0) scale(1);
+    -webkit-font-smoothing: antialiased;
 }
 
 #emoji-trigger:hover {
-    transform: scale(1.1);
+    transform: translateZ(0) scale(1.1);
 }
 
 #emoji-menu {
