@@ -51,7 +51,29 @@ export default function GameScreen() {
               </header>
 
               <div id="game-layout">
-                  <div id="board-container">
+                  <div id="board-container" style={{ position: 'relative' }}>
+                      <div id="emoji-menu"
+                          style={{ display: 'none', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '200px', padding: '12px 12px 6px 12px', borderRadius: '12px', background: 'rgba(20, 20, 35, 0.98)', border: '1px solid var(--primary)', boxShadow: '0 8px 32px rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: '10000' }}>
+                          <div className="emoji-grid">
+                              <span className="emoji-opt">👏</span>
+                              <span className="emoji-opt">🔥</span>
+                              <span className="emoji-opt">😂</span>
+                              <span className="emoji-opt">🤯</span>
+                              <span className="emoji-opt">😭</span>
+                              <span className="emoji-opt">👀</span>
+                              <span className="emoji-opt">👎</span>
+                              <span className="emoji-opt">🤫</span>
+                              <span className="emoji-opt">🎉</span>
+                          </div>
+                          <div className="chat-list">
+                              <div className="chat-opt" data-msg="Good move!">Good move!</div>
+                              <div className="chat-opt" data-msg="Oops!">Oops!</div>
+                              <div className="chat-opt" data-msg="Nice Sequence!">Nice Sequence!</div>
+                              <div className="chat-opt" data-msg="Hurry up!">Hurry up!</div>
+                              <div className="chat-opt" data-msg="Good game!">Good game!</div>
+                              <div className="chat-opt" data-msg="I will eat you!">I will eat you!</div>
+                          </div>
+                      </div>
                       <div id="game-board" className="board">
                           <svg id="sequence-lines" className="sequence-svg"></svg>
                           <div id="wipe-target-container"
@@ -92,28 +114,6 @@ export default function GameScreen() {
                   
                   <div id="emoji-picker-container">
                       <button id="emoji-trigger" aria-label="Emoji Menu"></button>
-                      <div id="emoji-menu"
-                          style={{ display: 'none', position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '200px', padding: '12px', borderRadius: '12px', background: 'rgba(20, 20, 35, 0.98)', border: '1px solid var(--primary)', boxShadow: '0 8px 32px rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: '10000' }}>
-                          <div className="emoji-grid">
-                              <span className="emoji-opt">👏</span>
-                              <span className="emoji-opt">🔥</span>
-                              <span className="emoji-opt">😂</span>
-                              <span className="emoji-opt">🤯</span>
-                              <span className="emoji-opt">😭</span>
-                              <span className="emoji-opt">👀</span>
-                              <span className="emoji-opt">👎</span>
-                              <span className="emoji-opt">🤫</span>
-                              <span className="emoji-opt">🎉</span>
-                          </div>
-                          <div className="chat-list">
-                              <div className="chat-opt" data-msg="Good move!">Good move!</div>
-                              <div className="chat-opt" data-msg="Oops!">Oops!</div>
-                              <div className="chat-opt" data-msg="Nice Sequence!">Nice Sequence!</div>
-                              <div className="chat-opt" data-msg="Hurry up!">Hurry up!</div>
-                              <div className="chat-opt" data-msg="Good game!">Good game!</div>
-                              <div className="chat-opt" data-msg="I will eat you!">I will eat you!</div>
-                          </div>
-                      </div>
                   </div>
               </div>
           </div>
