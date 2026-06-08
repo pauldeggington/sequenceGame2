@@ -349,6 +349,23 @@ class SequenceGame {
 
         this.initSetup();
         this.initBackgroundCards();
+        this.preloadCards();
+    }
+
+    preloadCards() {
+        // Preload standard board cards to prevent slow rendering when dealt
+        const allCards = BOARD_LAYOUT.flat().filter(c => c !== 'FREE');
+        const uniqueCards = [...new Set(allCards)];
+        
+        // Add Jacks explicitly since they are not on the board
+        const jacks = ['JH', 'JD', 'JS', 'JC'];
+        
+        const allImages = [...uniqueCards, ...jacks, 'FREE'];
+        
+        allImages.forEach(card => {
+            const img = new Image();
+            img.src = getCardImagePath(card);
+        });
     }
 
     initBackgroundCards() {
