@@ -73,10 +73,10 @@ body {
     min-width: 300px;
     text-align: center;
     padding: 20px;
-    background: linear-gradient(180deg, #091c38 0%, #041022 100%);
-    border: 2px solid var(--primary);
+    background: transparent;
+    border: none;
     border-radius: 20px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 25px rgba(0, 210, 255, 0.3), inset 0 0 15px rgba(0, 210, 255, 0.15);
+    box-shadow: none;
 }
 
 .instructions-wrapper {
@@ -1111,7 +1111,10 @@ header h1 {
     z-index: 6;
 }
 
-
+.setup-card {
+    background: transparent;
+    border: none;
+}
 
 /* ── Hand panel ── */
 #hand-panel {
@@ -1311,7 +1314,7 @@ img, .no-drag {
     width: 100%;
     min-height: 44px;
     margin-top: 0;
-    padding-bottom: 35px; /* Moved up more */
+    padding-bottom: 20px;
 }
 
 /* Game log */
@@ -1526,10 +1529,6 @@ img, .no-drag {
         /* Lift hand slightly */
     }
 
-    .hand {
-        gap: 0;
-    }
-
     .card {
         width: clamp(80px, 22vw, 130px);
     }
@@ -1548,7 +1547,7 @@ img, .no-drag {
 
     .footer-row {
         min-height: 48px;
-        margin-bottom: 25px;
+        margin-bottom: 10px;
         /* Lift row up from the very bottom for better reach */
     }
 
