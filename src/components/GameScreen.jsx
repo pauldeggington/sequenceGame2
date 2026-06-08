@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 export default function GameScreen() {
+
+
   return (
     <>
       <div id="game-screen" style={{ display: 'none' }}>
@@ -9,12 +11,19 @@ export default function GameScreen() {
               <div className="turn-overlay-text">Your Turn</div>
           </div>
 
-          <div id="game-container">
-              <header className="game-header">
+          <div className="sidebar-wrapper">
+              <div className="sidebar sidebar-left">
+                  <ins className="adsbygoogle"
+                       style={{ display: 'block' }}
+                       data-ad-client="ca-pub-4922815922422305"
+                       data-ad-slot="4651030442"
+                       data-ad-format="auto"
+                       data-full-width-responsive="true"></ins>
+              </div>
+
+              <div id="game-container">
+                  <header className="game-header">
                   <div className="header-left">
-                      <button id="mute-btn" className="icon-button mobile-mute" aria-label="Toggle Sound">
-                          🔊
-                      </button>
                       <div id="host-dropped-warning" style={{ display: 'none' }}>
                           <span style={{ fontWeight: 'bold' }}>⚠ Host Connection Lost!</span>
                           <span id="host-reconnect-timer">Attempting to reconnect...</span>
@@ -103,6 +112,18 @@ export default function GameScreen() {
                   <div id="emoji-picker-container">
                       <button id="emoji-trigger" aria-label="Emoji Menu"></button>
                   </div>
+                  <button id="mute-btn" className="icon-button" aria-label="Toggle Sound" style={{ fontSize: '1.5rem', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '50%', color: 'white', cursor: 'pointer', flexShrink: 0 }}>
+                      🔊
+                  </button>
+              </div>
+              </div>
+              <div className="sidebar sidebar-right">
+                  <ins className="adsbygoogle"
+                       style={{ display: 'block' }}
+                       data-ad-client="ca-pub-4922815922422305"
+                       data-ad-slot="5676483291"
+                       data-ad-format="auto"
+                       data-full-width-responsive="true"></ins>
               </div>
           </div>
       </div>

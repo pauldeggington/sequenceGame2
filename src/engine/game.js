@@ -640,13 +640,36 @@ class SequenceGame {
         localStorage.setItem('sequence_isHost', isHost ? 'true' : 'false');
         document.title = `Very Wild Jacks | Room ${roomId}`;
 
+        const basePath = window.location.pathname.replace(/\/index\.html$/, '/');
+        const shareUrl = `${window.location.origin}${basePath}#${roomId}`;
+
+        if (this.isHost) {
+            ui.status.innerText = "Opening lobby...";
+            ui.inviteBox.style.display = 'block';
+            ui.inviteUrl.value = shareUrl;
+            ui.teamCfg.style.display = 'block';
+            this.updateTeamLabels(ui.teamLabels);
+            if (this.syncPlayers) this.syncPlayers();
+            ui.startBtn.style.display = 'block';
+            
+            ui.inviteUrl.onmousedown = () => {
+                ui.inviteUrl.select();
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                    const originalLabel = document.querySelector('.invite-label').innerText;
+                    document.querySelector('.invite-label').innerText = '📋 Copied to clipboard!';
+                    document.querySelector('.invite-label').style.color = 'var(--primary)';
+                    setTimeout(() => {
+                        document.querySelector('.invite-label').innerText = originalLabel;
+                        document.querySelector('.invite-label').style.color = '';
+                    }, 2000);
+                });
+            };
+        }
+
         const metaDesc = document.querySelector('meta[name="description"]');
         if (metaDesc) {
             metaDesc.setAttribute('content', `Join my game of Very Wild Jacks! Room ID: ${roomId}. Play Sequence online with friends.`);
         }
-
-        const basePath = window.location.pathname.replace(/\/index\.html$/, '/');
-        const shareUrl = `${window.location.origin}${basePath}#${roomId}`;
 
         // Cleanup old peer if exists
         if (this.peer && !this.peer.destroyed) {
@@ -709,24 +732,6 @@ class SequenceGame {
             this.myPeerId = id;
             if (this.isHost) {
                 ui.status.innerText = "Waiting for players...";
-                ui.inviteBox.style.display = 'block';
-                ui.inviteUrl.value = shareUrl;
-                ui.inviteUrl.onmousedown = () => {
-                    ui.inviteUrl.select();
-                    navigator.clipboard.writeText(shareUrl).then(() => {
-                        const originalLabel = document.querySelector('.invite-label').innerText;
-                        document.querySelector('.invite-label').innerText = '📋 Copied to clipboard!';
-                        document.querySelector('.invite-label').style.color = 'var(--primary)';
-                        setTimeout(() => {
-                            document.querySelector('.invite-label').innerText = originalLabel;
-                            document.querySelector('.invite-label').style.color = '';
-                        }, 2000);
-                    });
-                };
-                ui.teamCfg.style.display = 'block';
-                this.updateTeamLabels(ui.teamLabels);
-                if (this.syncPlayers) this.syncPlayers();
-                ui.startBtn.style.display = 'block';
                 // Successor host should broadcast a backup immediately for others to follow
                 if (this.started) this.saveGameState();
             } else {
@@ -1468,6 +1473,17 @@ class SequenceGame {
         ui.setupScreen.style.display = 'none';
         ui.gameScreen.style.display = 'block';
 
+        // Initialize AdSense only after the screen is visible
+        try {
+            if (!this.adsInitialized && window.adsbygoogle) {
+                (window.adsbygoogle = window.adsbygoogle || []).push({});
+                (window.adsbygoogle = window.adsbygoogle || []).push({});
+                this.adsInitialized = true;
+            }
+        } catch (e) {
+            console.error("AdSense error", e);
+        }
+
         const bgCards = document.getElementById('bg-cards');
         if (bgCards) bgCards.style.display = 'none';
 
@@ -1926,20 +1942,49 @@ class SequenceGame {
     }
 
 
+    positionHintOverCard(hintEl, cardIndex) {
+        if (!hintEl) return;
+        const ui = this.ui;
+        if (cardIndex !== null && cardIndex !== undefined) {
+            const cardEls = ui.playerHand.querySelectorAll('.card');
+            const cardEl = cardEls[cardIndex];
+            if (cardEl) {
+                const rect = cardEl.getBoundingClientRect();
+                hintEl.style.left = `${rect.left + rect.width / 2}px`;
+                hintEl.style.top = `${rect.top - 15}px`;
+                hintEl.style.transform = 'translate(-50%, -100%)';
+                return;
+            }
+        }
+        
+        // Default centering if no card index (e.g. for wipe mode)
+        hintEl.style.left = '50%';
+        hintEl.style.top = '10%';
+        hintEl.style.transform = 'translate(-50%, 0)';
+    }
+
     updateJackHint() {
         const ui = this.ui;
         if (!ui.jackHint) return;
         if (this.wipeSelectionMode) return; // Wait for target selection to end
 
+        let showHint = false;
         // Jack & Joker hints
         if (this.jackMode === 'one-eye') {
-            ui.jackHint.innerText = "👁 One-Eyed Jack: Click an opponent's chip to remove it.";
-            ui.jackHint.style.visibility = 'visible';
+            ui.jackHint.innerHTML = "<div class='hint-text'>One-Eyed Jack: Click an opponent's chip to remove it.</div><div class='hint-emoji'>👁</div>";
+            showHint = true;
         } else if (this.jackMode === 'two-eye') {
-            ui.jackHint.innerText = "👁👁 Two-Eyed Jack: Click any empty cell to place your chip.";
-            ui.jackHint.style.visibility = 'visible';
+            ui.jackHint.innerHTML = "<div class='hint-text'>Two-Eyed Jack: Click any empty cell to place your chip.</div><div class='hint-emoji'>👁👁</div>";
+            showHint = true;
         } else if (this.jackMode === 'joker' || (this.selectedCardIndex !== null && this.hand[this.selectedCardIndex].startsWith('JOK'))) {
             // Handle Joker hint persisting if selected (not technically a jackMode)
+        }
+
+        if (showHint) {
+            ui.jackHint.style.visibility = 'visible';
+            ui.jackHint.style.left = '';
+            ui.jackHint.style.top = '';
+            ui.jackHint.style.transform = '';
         } else {
             ui.jackHint.style.visibility = 'hidden';
         }
@@ -1949,6 +1994,7 @@ class SequenceGame {
             if (this.selectedIsDead && this.currentTurn === this.myColor) {
                 ui.deadHint.innerText = "💀 Dead Card: Click to exchange for a new one.";
                 ui.deadHint.style.visibility = 'visible';
+                this.positionHintOverCard(ui.deadHint, this.selectedCardIndex);
             } else {
                 ui.deadHint.style.visibility = 'hidden';
             }
@@ -2037,18 +2083,23 @@ class SequenceGame {
         // If currently targeting wipe, do not change hint
         if (this.wipeSelectionMode) return;
 
-        if (isOneEye) {
-            ui.jackHint.innerText = "👁 One-Eyed Jack: Click an opponent's chip to remove it.";
-            ui.jackHint.style.visibility = 'visible';
-            ui.deadHint.style.visibility = 'hidden';
-        } else if (isTwoEye) {
+        let hintHTML = "";
+        if (isOneEye) hintHTML = "<div class='hint-text'>One-Eyed Jack: Click an opponent's chip to remove it.</div><div class='hint-emoji'>👁</div>";
+        else if (isTwoEye) {
             if (this.wipeEnabled && this.selectedCards && this.selectedCards.length === 2) {
-                ui.jackHint.innerText = "💥 2x Two-Eyed Jacks: Trigger The Wipe or place a single chip.";
+                hintHTML = "<div class='hint-text'>2x Two-Eyed Jacks: Trigger The Wipe or place a single chip.</div><div class='hint-emoji'>💥</div>";
             } else {
-                ui.jackHint.innerText = "👁👁 Two-Eyed Jack: Click any empty cell to place your chip.";
+                hintHTML = "<div class='hint-text'>Two-Eyed Jack: Click any empty cell to place your chip.</div><div class='hint-emoji'>👁👁</div>";
             }
+        }
+
+        if (hintHTML) {
+            ui.jackHint.innerHTML = hintHTML;
             ui.jackHint.style.visibility = 'visible';
             ui.deadHint.style.visibility = 'hidden';
+            ui.jackHint.style.left = '';
+            ui.jackHint.style.top = '';
+            ui.jackHint.style.transform = '';
         } else {
             ui.jackHint.style.visibility = 'hidden';
         }
@@ -2057,6 +2108,7 @@ class SequenceGame {
             ui.deadHint.innerText = "💀 Dead Card: Click to exchange for a new one.";
             ui.deadHint.style.visibility = 'visible';
             ui.jackHint.style.visibility = 'hidden';
+            this.positionHintOverCard(ui.deadHint, this.hoveredCardIndex);
         } else if (!isOneEye && !isTwoEye) {
             ui.deadHint.style.visibility = 'hidden';
         }
@@ -2120,8 +2172,11 @@ class SequenceGame {
         };
         ui.wipeTargetContainer.appendChild(backdrop);
 
-        ui.jackHint.innerText = "💥 WIPE MODE: Select a target red arrow on the board border to destroy that line. Click anywhere else to cancel.";
+        ui.jackHint.innerHTML = "<div class='hint-text'>WIPE MODE: Select a target red arrow on the board border to destroy that line. Click anywhere else to cancel.</div><div class='hint-emoji'>💥</div>";
         ui.jackHint.style.visibility = 'visible';
+        ui.jackHint.style.left = '';
+        ui.jackHint.style.top = '';
+        ui.jackHint.style.transform = '';
 
         // Generate Arrows
         const createArrow = (axis, index, positionStyles) => {

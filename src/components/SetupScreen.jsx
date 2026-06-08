@@ -15,7 +15,7 @@ export default function SetupScreen() {
                     autoComplete="off" />
             </div>
 
-            <div id="create-game-section" className="setup-section" style={{ display: 'none', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+            <div id="create-game-section" className="setup-section create-game-buttons" style={{ display: 'none' }}>
                 <img id="create-game-btn" src="playMultiplayer.svg" alt="Create Multiplayer Game" className="svg-button" />
                 <img id="play-single-btn" src="playSolo.svg" alt="Play By Yourself" className="svg-button" />
             </div>
