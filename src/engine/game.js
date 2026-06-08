@@ -1939,17 +1939,6 @@ class SequenceGame {
             };
 
             cardEl.onpointerenter = () => {
-                // Feature requested by user: deselect if hovering another card
-                if (this.selectedCardIndex !== null && this.selectedCardIndex !== index) {
-                    const prevSelectedCard = ui.hand.children[this.selectedCardIndex];
-                    if (prevSelectedCard) {
-                        prevSelectedCard.classList.remove('selected');
-                    }
-                    this.selectedCardIndex = null;
-                    this.jackMode = null;
-                    this.updateJackHint(); // Update the hint text and visibility immediately
-                    this.syncBoardState(); // Remove highlights on the board
-                }
 
                 this.hoveredCardIndex = index;
                 this.hoverJackMode = isOneEye ? 'one-eye' : isTwoEye ? 'two-eye' : null;
