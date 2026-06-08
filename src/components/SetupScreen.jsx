@@ -28,6 +28,16 @@ export default function SetupScreen() {
                 </div>
             </div>
 
+            <div id="action-buttons-top" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', marginBottom: '20px' }}>
+                <button id="start-game-btn" className="premium-button start-btn" style={{ display: 'none', marginBottom: '15px' }}>
+                    Start Game
+                </button>
+
+                <button id="setup-back-btn" className="premium-button secondary" style={{ display: 'none' }}>
+                    Back to Menu
+                </button>
+            </div>
+
             <div id="team-config" className="setup-section" style={{ display: 'none' }}>
                 <h3>Game Options</h3>
                 <div className="options-row"
@@ -90,15 +100,6 @@ export default function SetupScreen() {
                 <h3>Players</h3>
                 <div id="players-connected"></div>
             </div>
-
-            <button id="start-game-btn" className="premium-button start-btn" style={{ display: 'none' }}>
-                Start Game
-            </button>
-
-            <button id="setup-back-btn" className="premium-button secondary"
-                style={{ display: 'none', marginTop: '15px' }}>
-                Back to Menu
-            </button>
 
             <p id="waiting-msg" className="waiting-text" style={{ display: 'none' }}>Waiting for host to start...
             </p>
