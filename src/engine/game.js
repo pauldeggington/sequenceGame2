@@ -1914,6 +1914,18 @@ class SequenceGame {
             };
 
             cardEl.onpointerenter = () => {
+                // Feature requested by user: deselect if hovering another card
+                if (this.selectedCardIndex !== null && this.selectedCardIndex !== index) {
+                    const prevSelectedCard = ui.hand.children[this.selectedCardIndex];
+                    if (prevSelectedCard) {
+                        prevSelectedCard.classList.remove('selected');
+                    }
+                    this.selectedCardIndex = null;
+                    this.jackMode = null;
+                    this.updateJackHint(); // Update the hint text and visibility immediately
+                    this.syncBoardState(); // Remove highlights on the board
+                }
+
                 this.hoveredCardIndex = index;
                 this.hoverJackMode = isOneEye ? 'one-eye' : isTwoEye ? 'two-eye' : null;
                 this.handleCardHover(card, true, isDead, isOneEye, isTwoEye);
@@ -1942,25 +1954,43 @@ class SequenceGame {
     }
 
 
-    positionHintOverCard(hintEl, cardIndex) {
+
+
+    positionHintOverCard(hintEl, cardIndex, explicitText) {
+        /* Temporarily disabled per user request
         if (!hintEl) return;
         const ui = this.ui;
+        
+        if (explicitText) {
+            hintEl.innerText = explicitText;
+        }
+        
         if (cardIndex !== null && cardIndex !== undefined) {
             const cardEls = ui.playerHand.querySelectorAll('.card');
             const cardEl = cardEls[cardIndex];
             if (cardEl) {
-                const rect = cardEl.getBoundingClientRect();
-                hintEl.style.left = `${rect.left + rect.width / 2}px`;
-                hintEl.style.top = `${rect.top - 15}px`;
+                // Move the hint element inside the card and position it relative to the card
+                hintEl.style.position = 'absolute';
+                hintEl.style.left = '50%';
+                hintEl.style.top = '-10px';
                 hintEl.style.transform = 'translate(-50%, -100%)';
+                hintEl.style.width = 'max-content';
+                cardEl.appendChild(hintEl);
+                hintEl.style.visibility = 'visible';
                 return;
             }
         }
         
         // Default centering if no card index (e.g. for wipe mode)
+        const handPanel = document.getElementById('hand-panel') || document.body;
+        handPanel.appendChild(hintEl); // Return it to normal flow
+        hintEl.style.position = 'fixed';
         hintEl.style.left = '50%';
         hintEl.style.top = '10%';
         hintEl.style.transform = 'translate(-50%, 0)';
+        hintEl.style.width = 'max-content';
+        hintEl.style.visibility = 'visible';
+        */
     }
 
     updateJackHint() {
@@ -1969,24 +1999,28 @@ class SequenceGame {
         if (this.wipeSelectionMode) return; // Wait for target selection to end
 
         let showHint = false;
+        let hintText = "";
         // Jack & Joker hints
         if (this.jackMode === 'one-eye') {
-            ui.jackHint.innerHTML = "<div class='hint-text'>One-Eyed Jack: Click an opponent's chip to remove it.</div><div class='hint-emoji'>👁</div>";
+            hintText = "Remove any opponent's chip";
             showHint = true;
         } else if (this.jackMode === 'two-eye') {
-            ui.jackHint.innerHTML = "<div class='hint-text'>Two-Eyed Jack: Click any empty cell to place your chip.</div><div class='hint-emoji'>👁👁</div>";
+            hintText = "Place chip on any empty cell";
             showHint = true;
         } else if (this.jackMode === 'joker' || (this.selectedCardIndex !== null && this.hand[this.selectedCardIndex].startsWith('JOK'))) {
             // Handle Joker hint persisting if selected (not technically a jackMode)
         }
 
         if (showHint) {
+            ui.jackHint.innerText = hintText;
             ui.jackHint.style.visibility = 'visible';
-            ui.jackHint.style.left = '';
-            ui.jackHint.style.top = '';
-            ui.jackHint.style.transform = '';
+            this.positionHintOverCard(ui.jackHint, this.selectedCardIndex, hintText);
         } else {
             ui.jackHint.style.visibility = 'hidden';
+            // Return to body to prevent lingering inside cards
+            if (ui.jackHint.parentElement && ui.jackHint.parentElement.classList.contains('card')) {
+                document.getElementById('hand-panel').appendChild(ui.jackHint);
+            }
         }
 
         // Dead card hints
@@ -1994,9 +2028,12 @@ class SequenceGame {
             if (this.selectedIsDead && this.currentTurn === this.myColor) {
                 ui.deadHint.innerText = "💀 Dead Card: Click to exchange for a new one.";
                 ui.deadHint.style.visibility = 'visible';
-                this.positionHintOverCard(ui.deadHint, this.selectedCardIndex);
+                this.positionHintOverCard(ui.deadHint, this.selectedCardIndex, ui.deadHint.innerText);
             } else {
                 ui.deadHint.style.visibility = 'hidden';
+                if (ui.deadHint.parentElement && ui.deadHint.parentElement.classList.contains('card')) {
+                    document.getElementById('hand-panel').appendChild(ui.deadHint);
+                }
             }
         }
     }
@@ -2083,34 +2120,38 @@ class SequenceGame {
         // If currently targeting wipe, do not change hint
         if (this.wipeSelectionMode) return;
 
-        let hintHTML = "";
-        if (isOneEye) hintHTML = "<div class='hint-text'>One-Eyed Jack: Click an opponent's chip to remove it.</div><div class='hint-emoji'>👁</div>";
+        let hintText = "";
+        if (isOneEye) hintText = "Remove any opponent's chip";
         else if (isTwoEye) {
             if (this.wipeEnabled && this.selectedCards && this.selectedCards.length === 2) {
-                hintHTML = "<div class='hint-text'>2x Two-Eyed Jacks: Trigger The Wipe or place a single chip.</div><div class='hint-emoji'>💥</div>";
+                hintText = "2x Jacks: Trigger The Wipe";
             } else {
-                hintHTML = "<div class='hint-text'>Two-Eyed Jack: Click any empty cell to place your chip.</div><div class='hint-emoji'>👁👁</div>";
+                hintText = "Place chip on any empty cell";
             }
         }
 
-        if (hintHTML) {
-            ui.jackHint.innerHTML = hintHTML;
+        if (hintText) {
+            ui.jackHint.innerText = hintText;
             ui.jackHint.style.visibility = 'visible';
             ui.deadHint.style.visibility = 'hidden';
-            ui.jackHint.style.left = '';
-            ui.jackHint.style.top = '';
-            ui.jackHint.style.transform = '';
+            this.positionHintOverCard(ui.jackHint, this.hoveredCardIndex, hintText);
         } else {
             ui.jackHint.style.visibility = 'hidden';
+            if (ui.jackHint.parentElement && ui.jackHint.parentElement.classList.contains('card')) {
+                document.getElementById('hand-panel').appendChild(ui.jackHint);
+            }
         }
 
         if (isDead) {
-            ui.deadHint.innerText = "💀 Dead Card: Click to exchange for a new one.";
+            ui.deadHint.innerText = "Dead: Click to exchange";
             ui.deadHint.style.visibility = 'visible';
             ui.jackHint.style.visibility = 'hidden';
-            this.positionHintOverCard(ui.deadHint, this.hoveredCardIndex);
+            this.positionHintOverCard(ui.deadHint, this.hoveredCardIndex, ui.deadHint.innerText);
         } else if (!isOneEye && !isTwoEye) {
             ui.deadHint.style.visibility = 'hidden';
+            if (ui.deadHint.parentElement && ui.deadHint.parentElement.classList.contains('card')) {
+                document.getElementById('hand-panel').appendChild(ui.deadHint);
+            }
         }
     }
 
@@ -2172,11 +2213,10 @@ class SequenceGame {
         };
         ui.wipeTargetContainer.appendChild(backdrop);
 
-        ui.jackHint.innerHTML = "<div class='hint-text'>WIPE MODE: Select a target red arrow on the board border to destroy that line. Click anywhere else to cancel.</div><div class='hint-emoji'>💥</div>";
+        ui.jackHint.innerText = "💥 WIPE MODE: Select a target red arrow on the board border to destroy that line. Click anywhere else to cancel.";
         ui.jackHint.style.visibility = 'visible';
-        ui.jackHint.style.left = '';
-        ui.jackHint.style.top = '';
-        ui.jackHint.style.transform = '';
+        this.positionHintOverCard(ui.jackHint, null);
+        ui.jackHint.style.visibility = 'visible';
 
         // Generate Arrows
         const createArrow = (axis, index, positionStyles) => {

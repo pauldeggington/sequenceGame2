@@ -11,18 +11,8 @@ export default function GameScreen() {
               <div className="turn-overlay-text">Your Turn</div>
           </div>
 
-          <div className="sidebar-wrapper">
-              <div className="sidebar sidebar-left">
-                  <ins className="adsbygoogle"
-                       style={{ display: 'block' }}
-                       data-ad-client="ca-pub-4922815922422305"
-                       data-ad-slot="4651030442"
-                       data-ad-format="auto"
-                       data-full-width-responsive="true"></ins>
-              </div>
-
-              <div id="game-container">
-                  <header className="game-header">
+          <div id="game-container">
+              <header className="game-header">
                   <div className="header-left">
                       <div id="host-dropped-warning" style={{ display: 'none' }}>
                           <span style={{ fontWeight: 'bold' }}>⚠ Host Connection Lost!</span>
@@ -115,15 +105,6 @@ export default function GameScreen() {
                   <button id="mute-btn" className="icon-button" aria-label="Toggle Sound" style={{ fontSize: '1.5rem', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '50%', color: 'white', cursor: 'pointer', flexShrink: 0 }}>
                       🔊
                   </button>
-              </div>
-              </div>
-              <div className="sidebar sidebar-right">
-                  <ins className="adsbygoogle"
-                       style={{ display: 'block' }}
-                       data-ad-client="ca-pub-4922815922422305"
-                       data-ad-slot="5676483291"
-                       data-ad-format="auto"
-                       data-full-width-responsive="true"></ins>
               </div>
           </div>
       </div>
