@@ -666,6 +666,7 @@ header {
     justify-content: center;
     align-items: center;
     width: 100%;
+    margin-top: 24px;
 }
 
 @media (max-width: 600px) {
@@ -1126,13 +1127,13 @@ header h1 {
 
 .hand {
     display: flex;
-    gap: 0;
+    gap: 8px;
     justify-content: center;
     overflow: visible;
 }
 
 .card+.card {
-    margin-left: -30px;
+    margin-left: 0;
 }
 
 /* ── Cards – real playing card style ── */
@@ -1529,6 +1530,10 @@ img, .no-drag {
         /* Lift hand slightly */
     }
 
+    .hand {
+        gap: 0;
+    }
+
     .card {
         width: clamp(80px, 22vw, 130px);
     }
@@ -1775,6 +1780,18 @@ input[type="checkbox"]#wipe-toggle:checked+.toggle-switch::after {
 #emoji-trigger:hover {
     transform: scale(1.1);
 }
+
+#mute-btn {
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform: scale(1) translate(0, 0);
+    will-change: transform;
+}
+
+#mute-btn:hover {
+    transform: scale(1.1) translate(0, 0);
+}
+
+
 
 #emoji-menu {
     position: absolute;

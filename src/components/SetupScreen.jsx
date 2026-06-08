@@ -9,7 +9,7 @@ export default function SetupScreen() {
                     <img src="VeryWildJacksLogo.svg?v=2" alt="Very Wild Jacks" className="setup-logo" />
                 </a>
             </h1>
-            <div className="setup-section name-section">
+            <div id="name-input-section" className="setup-section name-section" style={{ display: 'none' }}>
                 <label htmlFor="player-name" className="name-label">Your Name</label>
                 <input id="player-name" type="text" placeholder="Enter your name..." maxLength="20"
                     autoComplete="off" />

@@ -102,9 +102,9 @@ export default function GameScreen() {
                   <div id="emoji-picker-container">
                       <button id="emoji-trigger" aria-label="Emoji Menu"></button>
                   </div>
-                  <button id="mute-btn" className="icon-button" aria-label="Toggle Sound" style={{ fontSize: '1.5rem', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '50%', color: 'white', cursor: 'pointer', flexShrink: 0 }}>
-                      🔊
-                  </button>
+                  <div id="mute-btn" aria-label="Toggle Sound" style={{ width: '60px', height: '60px', cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <img id="mute-icon" src="soundOn.svg" alt="Toggle Sound" style={{ width: '60px', height: '60px', pointerEvents: 'none' }} />
+                  </div>
               </div>
           </div>
       </div>

@@ -323,13 +323,18 @@ class SequenceGame {
         this.turnStartTime = 0;
         setInterval(() => this.tickTurnTimer(), 1000);
 
-        // Init mute UI state
         if (this.ui.muteBtn) {
-            this.ui.muteBtn.innerText = sounds.muted ? '🔇' : '🔊';
+            const muteIcon = document.getElementById('mute-icon');
+            if (muteIcon) {
+                muteIcon.src = sounds.muted ? 'soundOff.svg' : 'soundOn.svg';
+            }
+            
             this.ui.muteBtn.onclick = () => {
                 sounds.init(); // ensure context exists if clicking
                 const isMuted = sounds.toggleMute();
-                this.ui.muteBtn.innerText = isMuted ? '🔇' : '🔊';
+                if (muteIcon) {
+                    muteIcon.src = isMuted ? 'soundOff.svg' : 'soundOn.svg';
+                }
             };
         }
 
@@ -631,6 +636,9 @@ class SequenceGame {
         if (!ui) return;
 
         ui.createSec.style.display = 'none';
+        
+        const nameInputSec = document.getElementById('name-input-section');
+        if (nameInputSec) nameInputSec.style.display = 'block';
 
         if (isHost && window.location.hash !== '#' + roomId) {
             window.location.hash = roomId;
