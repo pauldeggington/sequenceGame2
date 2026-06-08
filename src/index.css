@@ -1119,7 +1119,6 @@ header h1 {
     padding: 14px 0 2px 0;
     /* top padding so raised cards aren't clipped */
     overflow: visible;
-    transform: translateY(12px);
 }
 
 .hand {
