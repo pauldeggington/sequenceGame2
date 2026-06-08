@@ -315,6 +315,10 @@ class SequenceGame {
         this.hands = {};         // For reconnects, host saves all hands dealt
         this.hostStateBackup = null; // Backup of the game state for migration
 
+        this.turnTimerLimit = 0;
+        this.turnStartTime = 0;
+        setInterval(() => this.tickTurnTimer(), 1000);
+
         // Init mute UI state
         if (this.ui.muteBtn) {
             this.ui.muteBtn.innerText = sounds.muted ? '🔇' : '🔊';
@@ -660,6 +664,8 @@ class SequenceGame {
                     this.winTarget = s.winTarget;
                     this.hintsEnabled = s.hintsEnabled;
                     this.boardLayoutMode = s.boardLayoutMode || 'default';
+                    this.turnTimerLimit = s.turnTimerLimit || 0;
+                    this.turnStartTime = s.turnStartTime || Date.now();
                     this.board = s.board || BOARD_LAYOUT;
                     this.started = s.started;
                     this.lastMove = s.lastMove || null;
@@ -892,6 +898,8 @@ class SequenceGame {
             this.hintsEnabled = data.hintsEnabled || false;
             this.wipeEnabled = data.wipeEnabled !== undefined ? data.wipeEnabled : false;
             this.boardLayoutMode = data.boardLayoutMode || 'default';
+            this.turnTimerLimit = data.turnTimerLimit || 0;
+            this.turnStartTime = data.turnStartTime || Date.now();
             this.board = data.board || BOARD_LAYOUT;
             this.started = true;
             this.showGameScreen();
@@ -930,6 +938,7 @@ class SequenceGame {
             }
             this.applyOpponentMove(data, peerId);
             this.currentTurn = data.nextTurn;
+            this.turnStartTime = Date.now();
             this.updateTurnUI();
             if (this.isHost) {
                 this.broadcast('move', data, peerId);
@@ -1329,7 +1338,14 @@ class SequenceGame {
         }
 
         if (this.isHost && this.ui) {
-            // Already updated via button clicks
+            const timerSlider = document.getElementById('turn-timer-slider');
+            if (timerSlider) {
+                const vals = [0, 15, 30, 60, 120];
+                this.turnTimerLimit = vals[parseInt(timerSlider.value)] || 0;
+            } else {
+                this.turnTimerLimit = 0;
+            }
+            this.turnStartTime = Date.now();
         }
 
         if (this.boardLayoutMode === 'random') {
@@ -1416,6 +1432,8 @@ class SequenceGame {
                     hintsEnabled: this.hintsEnabled,
                     wipeEnabled: this.wipeEnabled,
                     boardLayoutMode: this.boardLayoutMode,
+                    turnTimerLimit: this.turnTimerLimit,
+                    turnStartTime: this.turnStartTime,
                     board: this.board,
                     lastMove: this.lastMove
                 }, a.peerId);
@@ -1933,6 +1951,70 @@ class SequenceGame {
         }
     }
 
+    tickTurnTimer() {
+        if (!this.started || this.turnTimerLimit <= 0 || !this.currentTurn) return;
+
+        const elapsed = Math.floor((Date.now() - this.turnStartTime) / 1000);
+        const remaining = this.turnTimerLimit - elapsed;
+        
+        const ui = this.ui;
+        if (remaining >= 0 && ui.playerRoster) {
+            // Find the active badges and update their timers
+            const badges = ui.playerRoster.querySelectorAll('.player-badge');
+            badges.forEach(badge => {
+                const timerEl = badge.querySelector('.badge-timer');
+                if (badge.classList.contains('active-turn') && timerEl) {
+                    timerEl.style.display = 'block';
+                    timerEl.innerText = `${remaining}s`;
+                    
+                    if (remaining <= 5) {
+                        timerEl.style.color = '#ff4757';
+                        badge.style.animation = 'pulse-opacity 0.5s infinite';
+                    } else {
+                        timerEl.style.color = 'var(--primary)';
+                        badge.style.animation = 'none';
+                    }
+                } else if (timerEl) {
+                    timerEl.style.display = 'none';
+                    badge.style.animation = 'none';
+                }
+            });
+        }
+
+        if (this.isHost && remaining < 0) {
+            console.log("Turn timed out for:", this.currentTurn);
+            this.handleTurnTimeout();
+        }
+    }
+
+    handleTurnTimeout() {
+        if (!this.isHost) return;
+        
+        // Find the player whose turn it is
+        const playerState = Object.values(this.playerStates).find(s => s.color === this.currentTurn);
+        if (!playerState) return;
+
+        // Advance turn
+        const currentIndex = this.turnOrder.indexOf(this.currentTurn);
+        const nextTurn = this.turnOrder[(currentIndex + 1) % this.turnOrder.length];
+        
+        const moveData = {
+            moveType: 'timeout',
+            color: this.currentTurn,
+            nextTurn: nextTurn,
+            drawnCards: []
+        };
+
+        this.applyOpponentMove(moveData, 'HOST');
+        this.currentTurn = nextTurn;
+        this.turnStartTime = Date.now();
+        this.updateTurnUI();
+        this.broadcast('move', moveData, 'HOST');
+        this.saveGameState();
+
+        this.checkAndTriggerAITurn();
+    }
+
     handleCardHover(card, isHovering, isDead = false, isOneEye = false, isTwoEye = false) {
         const ui = this.ui;
         if (!ui.jackHint || !ui.deadHint) return;
@@ -1972,11 +2054,36 @@ class SequenceGame {
 
     updateScoreUI() {
         const ui = this.ui;
-        if (ui.redScore) ui.redScore.innerText = this.sequences.red;
-        if (ui.blueScore) ui.blueScore.innerText = this.sequences.blue;
-        if (this.teamCount >= 3 && ui.greenScore) {
-            ui.greenScore.innerText = this.sequences.green;
+        if (!ui.playerRoster) {
+            ui.playerRoster = document.getElementById('player-roster');
         }
+        if (!ui.playerRoster) return;
+
+        ui.playerRoster.innerHTML = '';
+        
+        // Render a badge for each player in the game
+        Object.values(this.playerStates).forEach(player => {
+            const teamScore = this.sequences[player.color] || 0;
+            const isMyTurn = this.currentTurn === player.color;
+
+            const badge = document.createElement('div');
+            badge.className = `player-badge ${isMyTurn ? 'active-turn' : ''}`;
+            badge.id = `badge-${player.peerId || player.name.replace(/\s+/g, '-')}`;
+
+            // Determine display color for dot
+            let dotColor = 'var(--red)';
+            if (player.color === 'blue') dotColor = 'var(--blue)';
+            else if (player.color === 'green') dotColor = 'var(--green)';
+
+            badge.innerHTML = `
+                <div class="badge-color-dot" style="background: ${dotColor};"></div>
+                <div class="badge-name">${player.name}</div>
+                <div class="badge-score">${teamScore}</div>
+                <div class="badge-timer" style="display: ${isMyTurn && this.turnTimerLimit > 0 ? 'block' : 'none'};"></div>
+            `;
+            
+            ui.playerRoster.appendChild(badge);
+        });
     }
 
     // ══════════════════════════════════════
@@ -2343,6 +2450,12 @@ class SequenceGame {
             }
         }
 
+        if (!this.isHost && data.color === this.myColor && newHand) {
+            this.hand.length = 0;
+            this.hand.push(...newHand);
+            this.renderHand();
+        }
+
         if (moveType === 'wipe') {
             const { axis, index } = moveData;
             const name = (this.colorNames && this.colorNames[color]) || color;
@@ -2363,6 +2476,13 @@ class SequenceGame {
             this.log(`♻️ ${name} exchanged dead card: ${cardName}`);
             if (this.isHost) this.saveGameState();
             return; // Turn continues for them
+        }
+
+        if (moveType === 'timeout') {
+            const name = (this.colorNames && this.colorNames[color]) || color;
+            this.log(`⏰ ${name}'s turn timed out!`);
+            if (this.isHost) this.saveGameState();
+            return; // Move handled, turn will advance
         }
 
         this.chips[row][col] = moveType === 'place' ? color : null;
@@ -2481,6 +2601,8 @@ class SequenceGame {
             hintsEnabled: this.hintsEnabled,
             wipeEnabled: this.wipeEnabled,
             boardLayoutMode: this.boardLayoutMode,
+            turnTimerLimit: this.turnTimerLimit,
+            turnStartTime: this.turnStartTime,
             board: this.board,
             started: this.started,
             lastMove: this.lastMove,
@@ -2807,21 +2929,24 @@ class SequenceGame {
     // ══════════════════════════════════════
     updateTurnUI() {
         const ui = this.ui;
-        if (!ui.turnIndicator || !this.currentTurn) return;
+        if (!this.currentTurn) return;
+        
+        // Re-render the score UI to update the active badge highlight and scores
+        this.updateScoreUI();
+
         const mine = this.currentTurn === this.myColor;
         if (mine) {
-            if (ui.turnIndicator.innerText !== "Your Turn!") {
+            // Need a way to track if the turn just started
+            // We can check if we're already showing the overlay, but let's just reset exchangedThisTurn
+            // if this is the first time we're processing this turn.
+            if (this._lastProcessedTurn !== this.turnStartTime) {
                 this.exchangedThisTurn = false; // Reset on turn start
+                this._lastProcessedTurn = this.turnStartTime;
+                this.showTurnOverlay();
+                sounds.playYourTurn();
+                if (navigator.vibrate) navigator.vibrate(200);
             }
-            ui.turnIndicator.innerText = "Your Turn!";
-            this.showTurnOverlay();
-            sounds.playYourTurn();
-            if (navigator.vibrate) navigator.vibrate(200);
-        } else {
-            const name = (this.colorNames && this.colorNames[this.currentTurn]) || this.currentTurn;
-            ui.turnIndicator.innerText = `⏳ ${name}'s turn…`;
         }
-        ui.turnIndicator.style.color = mine ? "var(--primary)" : "var(--text)";
         this.updateJackHint();
     }
 
@@ -2974,6 +3099,10 @@ class SequenceGame {
     log(msg) {
         const ui = this.ui;
         if (!ui.logContent) return;
+        
+        // Strip out emojis
+        msg = msg.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}\uFE0F]/gu, '').trim();
+        
         const el = document.createElement('div');
         el.className = 'log-entry';
         el.innerText = msg;

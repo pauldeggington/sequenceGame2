@@ -48,6 +48,24 @@ export default function SetupScreen() {
                         <span className="toggle-switch"></span>
                         <span className="toggle-label">Enable "The Wipe"</span>
                     </label>
+
+                    <div className="layout-select-container"
+                        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', width: '100%', marginTop: '5px' }}>
+                        <span className="toggle-label" style={{ marginBottom: '-5px' }}>Turn Timer: <span id="timer-val-display" style={{ color: 'var(--primary)', fontWeight: 'bold' }}>No Timer</span></span>
+                        <input type="range" id="turn-timer-slider" className="theme-slider" min="0" max="4" defaultValue="0" step="1" style={{ width: '80%', maxWidth: '300px' }} 
+                            onChange={(e) => {
+                                const vals = ['No Timer', '15s', '30s', '60s', '2m'];
+                                document.getElementById('timer-val-display').innerText = vals[e.target.value];
+                            }}
+                        />
+                        <div style={{ display: 'flex', justifyContent: 'space-between', width: '80%', maxWidth: '300px', fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)' }}>
+                            <span>Off</span>
+                            <span>15s</span>
+                            <span>30s</span>
+                            <span>60s</span>
+                            <span>2m</span>
+                        </div>
+                    </div>
                     <div className="layout-select-container"
                         style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', width: '100%' }}>
                         <span className="toggle-label">Board Layout</span>

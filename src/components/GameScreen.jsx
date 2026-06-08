@@ -12,6 +12,9 @@ export default function GameScreen() {
           <div id="game-container">
               <header className="game-header">
                   <div className="header-left">
+                      <button id="mute-btn" className="icon-button mobile-mute" aria-label="Toggle Sound">
+                          🔊
+                      </button>
                       <div id="my-team-indicator"
                           style={{ fontSize: '1.1em', color: 'var(--primary)' }}>You are: <strong
                               id="my-team-name"></strong></div>
@@ -33,19 +36,8 @@ export default function GameScreen() {
                   </div>
                   
                   <div className="header-right">
-                      <div id="connection-status" className="glass-panel"
-                          style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                          <button id="mute-btn" className="icon-button" aria-label="Toggle Sound"
-                              style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.2rem', cursor: 'pointer', padding: '0 5px' }}>
-                              🔊
-                          </button>
-                          <div className="turn-indicator" id="turn-indicator">Waiting...</div>
-                          <div className="player-chips">
-                              <div className="chip-count red">🔴 <span id="red-score">0</span></div>
-                              <div className="chip-count blue">🔵 <span id="blue-score">0</span></div>
-                              <div className="chip-count green" id="green-score-wrap" style={{ display: 'none' }}>🟢 <span
-                                      id="green-score">0</span></div>
-                          </div>
+                      <div id="player-roster" className="player-roster">
+                          {/* Dynamically populated by game.js */}
                       </div>
                   </div>
               </header>
