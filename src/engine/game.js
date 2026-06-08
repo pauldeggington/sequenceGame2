@@ -167,6 +167,11 @@ class SoundManager {
         this.playTone(300, 'triangle', 0.05, 0.5);
     }
 
+    playTimerTick() {
+        // Short, high-pitched tick like a clock
+        this.playTone(1000, 'sine', 0.05, 0.4);
+    }
+
     playPlaceChip() {
         this.playSample('pieceImpact');
     }
@@ -269,7 +274,6 @@ class SequenceGame {
             blueScore: document.getElementById('blue-score'),
             greenScore: document.getElementById('green-score'),
             greenScoreWrap: document.getElementById('green-score-wrap'),
-            myTeamName: document.getElementById('my-team-name'),
             turnOverlay: document.getElementById('turn-overlay'),
             gameOverOverlay: document.getElementById('game-over-overlay'),
             winnerDisplay: document.getElementById('winner-text'),
@@ -572,7 +576,7 @@ class SequenceGame {
             this.startSession(roomId, true);
         } else {
             ui.status.innerText = "";
-            ui.createSec.style.display = "block";
+            ui.createSec.style.display = "flex";
 
             ui.createBtn.onclick = () => {
                 ui.createSec.style.display = "none";
@@ -1173,7 +1177,7 @@ class SequenceGame {
         if (ui) {
             ui.gameScreen.style.display = 'none';
             ui.setupScreen.style.display = 'flex';
-            ui.createSec.style.display = 'block';
+            ui.createSec.style.display = 'flex';
             ui.status.innerText = "Room lost: No host available.";
             ui.status.style.color = "var(--red)";
 
@@ -1956,9 +1960,15 @@ class SequenceGame {
 
         const elapsed = Math.floor((Date.now() - this.turnStartTime) / 1000);
         const remaining = this.turnTimerLimit - elapsed;
-        
         const ui = this.ui;
         if (remaining >= 0 && ui.playerRoster) {
+            if (remaining > 0 && remaining <= 5) {
+                sounds.playTimerTick();
+                if (this.currentTurn === this.myColor && navigator.vibrate) {
+                    navigator.vibrate(50);
+                }
+            }
+
             // Find the active badges and update their timers
             const badges = ui.playerRoster.querySelectorAll('.player-badge');
             badges.forEach(badge => {
@@ -2071,9 +2081,9 @@ class SequenceGame {
             badge.id = `badge-${player.peerId || player.name.replace(/\s+/g, '-')}`;
 
             // Determine display color for dot
-            let dotColor = 'var(--red)';
-            if (player.color === 'blue') dotColor = 'var(--blue)';
-            else if (player.color === 'green') dotColor = 'var(--green)';
+            let dotColor = 'var(--red-chip)';
+            if (player.color === 'blue') dotColor = 'var(--blue-chip)';
+            else if (player.color === 'green') dotColor = 'var(--green-chip)';
 
             badge.innerHTML = `
                 <div class="badge-color-dot" style="background: ${dotColor};"></div>
@@ -2237,6 +2247,7 @@ class SequenceGame {
         this.jackMode = null;
         this.hoveredCardIndex = null;
         this.currentTurn = nextTurn;
+        this.turnStartTime = Date.now();
         this.newCardIndex = drawnCards.length > 0 ? this.hand.length - 1 : null;
 
         this.renderHand();
@@ -2405,6 +2416,7 @@ class SequenceGame {
         this.jackMode = null;
         this.hoveredCardIndex = null;
         this.currentTurn = nextTurn;
+        this.turnStartTime = Date.now();
 
         // Mark the newly drawn card for animation (it's always appended at end)
         this.newCardIndex = drawnCard ? this.hand.length - 1 : null;
@@ -2782,6 +2794,7 @@ class SequenceGame {
                 this.log(`⚠ ${name} has no valid moves!`);
                 const nextIdx = (colors.indexOf(myColor) + 1) % colors.length;
                 this.currentTurn = colors[nextIdx];
+                this.turnStartTime = Date.now();
                 this.updateTurnUI();
                 this.checkAndTriggerAITurn();
             }
@@ -2809,6 +2822,7 @@ class SequenceGame {
 
         const nextIdx = (colors.indexOf(myColor) + 1) % colors.length;
         this.currentTurn = colors[nextIdx];
+        this.turnStartTime = Date.now();
         this.renderBoard();
         this.updateTurnUI();
         this.checkSequences();
@@ -3100,8 +3114,15 @@ class SequenceGame {
         const ui = this.ui;
         if (!ui.logContent) return;
         
-        // Strip out emojis
-        msg = msg.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}\uFE0F]/gu, '').trim();
+        // Strip out emojis, but KEEP card suits
+        msg = msg.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}\uFE0F]/gu, (match) => {
+            return ['♠','♥','♦','♣'].includes(match) ? match : '';
+        }).trim();
+        
+        // Capitalize the first letter
+        if (msg.length > 0) {
+            msg = msg.charAt(0).toUpperCase() + msg.slice(1);
+        }
         
         const el = document.createElement('div');
         el.className = 'log-entry';

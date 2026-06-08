@@ -15,10 +15,6 @@ export default function GameScreen() {
                       <button id="mute-btn" className="icon-button mobile-mute" aria-label="Toggle Sound">
                           🔊
                       </button>
-                      <div id="my-team-indicator"
-                          style={{ fontSize: '1.1em', color: 'var(--primary)' }}>You are: <strong
-                              id="my-team-name"></strong></div>
-
                       <div id="host-dropped-warning" style={{ display: 'none' }}>
                           <span style={{ fontWeight: 'bold' }}>⚠ Host Connection Lost!</span>
                           <span id="host-reconnect-timer">Attempting to reconnect...</span>
