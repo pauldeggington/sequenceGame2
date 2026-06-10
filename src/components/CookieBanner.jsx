@@ -15,16 +15,24 @@ export default function CookieBanner() {
     setIsVisible(false);
   };
 
+  const handleDecline = () => {
+    localStorage.setItem('vwj_cookie_consent', 'declined');
+    setIsVisible(false);
+  };
+
   if (!isVisible) return null;
 
   return (
     <div className="glass-panel" style={bannerStyle}>
       <div style={contentStyle}>
-        <p style={{ margin: 0, fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)' }}>
+        <p style={{ margin: 0, fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)', textAlign: 'center', lineHeight: '1.4' }}>
           We use cookies to personalize content and ads, to provide social media features and to analyze our traffic. 
-          By clicking "Accept", you consent to our use of cookies. <a href="/privacy" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 'bold' }}>Read our Privacy Policy</a>.
+          By making a choice, you consent to our use of cookies. <a href="/privacy" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 'bold' }}>Read our Privacy Policy</a>.
         </p>
-        <button onClick={handleAccept} className="premium-button" style={{ padding: '8px 24px', fontSize: '0.9rem' }}>Accept</button>
+        <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', marginTop: '10px' }}>
+          <button onClick={handleDecline} className="premium-button secondary" style={{ padding: '8px 24px', fontSize: '0.9rem' }}>Decline</button>
+          <button onClick={handleAccept} className="premium-button" style={{ padding: '8px 24px', fontSize: '0.9rem' }}>Accept</button>
+        </div>
       </div>
     </div>
   );
@@ -33,11 +41,10 @@ export default function CookieBanner() {
 const bannerStyle = {
   position: 'fixed',
   bottom: '20px',
-  left: '50%',
-  transform: 'translateX(-50%)',
-  width: '92%',
-  maxWidth: '920px',
-  padding: '15px 25px',
+  right: '20px',
+  width: 'calc(100% - 40px)',
+  maxWidth: '450px',
+  padding: '20px 25px',
   zIndex: 9999,
   boxSizing: 'border-box'
 };
@@ -45,8 +52,8 @@ const bannerStyle = {
 const contentStyle = {
   width: '100%',
   display: 'flex',
-  justifyContent: 'space-between',
+  flexDirection: 'column',
+  justifyContent: 'center',
   alignItems: 'center',
-  gap: '20px',
-  flexWrap: 'wrap'
+  gap: '15px'
 };
