@@ -1,8 +1,11 @@
 import React from 'react';
+import Header from './Header';
+import Footer from './Footer';
 
 export default function SetupScreen() {
   return (
     <div id="setup-screen">
+      <Header forceShow={true} />
         <div className="setup-card glass-panel" style={{ maxWidth: '920px', width: '92%', margin: '0 auto 20px auto' }}>
             <h1 className="logo-title">
                 <a href="https://pauldeggington.github.io/sequenceGame2">
@@ -118,6 +121,7 @@ export default function SetupScreen() {
         <div className="mobile-ad">
             
         </div>
+        <Footer forceShow={true} />
     </div>
   );
 }
