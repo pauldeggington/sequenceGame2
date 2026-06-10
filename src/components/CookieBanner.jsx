@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 export default function CookieBanner() {
   const [isVisible, setIsVisible] = useState(false);
@@ -27,7 +28,7 @@ export default function CookieBanner() {
       <div style={contentStyle}>
         <p style={{ margin: 0, fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)', textAlign: 'center', lineHeight: '1.4' }}>
           We use cookies to personalize content and ads, to provide social media features and to analyze our traffic. 
-          By making a choice, you consent to our use of cookies. <a href="/privacy" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 'bold' }}>Read our Privacy Policy</a>.
+          By making a choice, you consent to our use of cookies. <Link to="/privacy" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 'bold' }}>Read our Privacy Policy</Link>.
         </p>
         <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', marginTop: '10px' }}>
           <button onClick={handleDecline} className="premium-button secondary" style={{ padding: '8px 24px', fontSize: '0.9rem' }}>Decline</button>
