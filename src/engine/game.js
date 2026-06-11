@@ -983,13 +983,30 @@ class SequenceGame {
                 this.redrawSequenceLines();
             }
         } else if (type === 'move') {
+            // Host is authoritative: reject out-of-turn moves from stale
+            // clients and snap them back with a full state resync.
+            if (this.isHost && data.color !== this.currentTurn) {
+                console.warn(`Rejected out-of-turn move from ${data.color} (current turn: ${this.currentTurn})`);
+                const playerID = this.playerIDMap[peerId];
+                if (playerID && this.playerStates[playerID]) {
+                    this.sendFullStateTo(peerId, playerID);
+                }
+                return;
+            }
+
             // Update lastMove BEFORE applyOpponentMove, since it calls renderBoard()
             if (data.moveType === 'place') {
                 this.lastMove = { r: data.row, c: data.col };
             } else if (data.moveType === 'remove') {
                 this.lastMove = null;
             }
-            this.applyOpponentMove(data, peerId);
+            // Advance the turn even if applying/rendering the move throws —
+            // a display bug must never freeze the turn state.
+            try {
+                this.applyOpponentMove(data, peerId);
+            } catch (e) {
+                console.error("Error applying opponent move:", e);
+            }
             this.currentTurn = data.nextTurn;
             this.turnStartTime = Date.now();
             this.updateTurnUI();
@@ -1034,6 +1051,11 @@ class SequenceGame {
                 if (roomID && data) {
                     localStorage.setItem(`sequence_gameState_${roomID}`, JSON.stringify(data));
                 }
+                // Self-heal: the backup is the host's authoritative post-move
+                // state. If our turn disagrees, we missed a move — adopt it.
+                if (this.started && data && data.currentTurn !== undefined && data.currentTurn !== this.currentTurn) {
+                    this.adoptAuthoritativeState(data);
+                }
             }
         }
 
@@ -1066,6 +1088,30 @@ class SequenceGame {
         });
     }
 
+    // Client: replace local game state with the host's authoritative snapshot.
+    // Used when a missed move is detected (our turn state drifted from the host's).
+    adoptAuthoritativeState(s) {
+        console.warn("State drift detected — adopting authoritative host state.");
+        this.chips = s.chips || this.chips;
+        this.sequences = s.sequences || this.sequences;
+        this.sequenceGrid = s.sequenceGrid || this.sequenceGrid;
+        this.lockedSequences = s.lockedSequences || this.lockedSequences;
+        this.deck = s.deck || this.deck;
+        this.currentTurn = s.currentTurn;
+        this.turnStartTime = s.turnStartTime || Date.now();
+        this.lastMove = s.lastMove || null;
+        const mine = s.playerStates && s.playerStates[this.playerID];
+        if (mine) {
+            if (mine.hand) this.hand = [...mine.hand];
+            if (mine.color) this.myColor = mine.color;
+        }
+        this.renderBoard();
+        this.renderHand();
+        this.updateTurnUI();
+        this.updateScoreUI();
+        this.redrawSequenceLines();
+    }
+
     // Client: ask host for a full state snapshot. If no gameStart arrives in time,
     // the connection is presumed silently dead (common on iOS after backgrounding)
     // and is torn down so the normal reconnect flow takes over.
@@ -1079,7 +1125,7 @@ class SequenceGame {
         clearTimeout(this._resyncTimeout);
         this._resyncTimeout = setTimeout(() => {
             console.warn("Resync timed out — connection presumed dead. Reconnecting...");
-            try { this.hostConnection.close(); } catch (e) { }
+            try { this.hostConnection.close(); } catch { /* ignore */ }
             this.hostConnection = null;
             this.attemptReconnect();
         }, 4000);
@@ -1093,7 +1139,7 @@ class SequenceGame {
         if (this._lastPongTime && Date.now() - this._lastPongTime > 15000) {
             console.warn("Heartbeat stale (no pong for 15s). Forcing reconnect...");
             this._lastPongTime = null;
-            try { this.hostConnection.close(); } catch (e) { }
+            try { this.hostConnection.close(); } catch { /* ignore */ }
             this.hostConnection = null;
             this.attemptReconnect();
             return;
@@ -1110,6 +1156,11 @@ class SequenceGame {
         this._connectingToHost = true;
 
         console.log("Connecting to host:", hostID);
+        // Discard any half-dead previous connection before replacing it
+        if (this.hostConnection) {
+            try { this.hostConnection.close(); } catch { /* ignore */ }
+            this.hostConnection = null;
+        }
         const newConn = this.peer.connect(hostID, { reliable: true });
 
         const handshakeTimeout = setTimeout(() => {
@@ -1232,7 +1283,7 @@ class SequenceGame {
             if (saved) {
                 try {
                     this.hostStateBackup = JSON.parse(saved);
-                } catch (e) { }
+                } catch { /* ignore */ }
             }
         }
 
@@ -1306,6 +1357,12 @@ class SequenceGame {
 
         conn.on('open', () => {
             if (this.isHost) {
+                // Replace any previous connection from the same peer (e.g. a
+                // zombie left behind after the client's network dropped).
+                const existing = this.connections[conn.peer];
+                if (existing && existing !== conn) {
+                    try { existing.close(); } catch { /* ignore */ }
+                }
                 if (!this.peers.includes(conn.peer)) {
                     this.peers.push(conn.peer);
                 }
@@ -1346,6 +1403,9 @@ class SequenceGame {
 
         conn.on('close', () => {
             if (this.isHost) {
+                // Only deregister if this is still the registered connection —
+                // a stale conn's delayed close must not evict its replacement.
+                if (this.connections[conn.peer] !== conn) return;
                 this.peers = this.peers.filter(p => p !== conn.peer);
                 delete this.connections[conn.peer];
                 const leaverName = this.peerNames[conn.peer] || 'A player';
@@ -1355,6 +1415,7 @@ class SequenceGame {
                     this.log(`❌ ${leaverName} disconnected.`);
                 }
             } else {
+                if (this.hostConnection && this.hostConnection !== conn) return; // stale conn
                 if (ui) ui.status.innerText = "Connection lost. Attempting reconnect...";
                 this.attemptReconnect();
             }
@@ -1363,6 +1424,7 @@ class SequenceGame {
         conn.on('error', (err) => {
             console.error("Connection error:", err);
             if (!this.isHost) {
+                if (this.hostConnection && this.hostConnection !== conn) return; // stale conn
                 this.attemptReconnect();
             }
         });
@@ -1378,15 +1440,16 @@ class SequenceGame {
     }
 
     sendMove(data) {
+        if (this.isSinglePlayer) return;
         if (this.isHost) {
             this.broadcast('move', data);
+        } else if (this.hostConnection && this.hostConnection.open) {
+            this.hostConnection.send({ type: 'move', data });
         } else {
-            if (this.hostConnection && this.hostConnection.open) {
-                this.log(`🚀 Sending move to host...`);
-                this.hostConnection.send({ type: 'move', data });
-            } else {
-                this.log(`⚠ Cannot send move. Host connection is not open.`);
-            }
+            // Never drop a move silently — reconnect; the resync snapshot
+            // will roll our optimistic local state back so we can replay.
+            this.log(`⚠ Connection to host lost — move not sent. Reconnecting...`);
+            this.attemptReconnect();
         }
     }
 
@@ -1438,10 +1501,6 @@ class SequenceGame {
             this.broadcast('gameStart', data);
         }
 
-    }
-
-    sendMove(data) {
-        this.broadcast('move', data);
     }
 
     sendSync(data) {
@@ -1801,7 +1860,6 @@ class SequenceGame {
     }
 
     syncBoardState() {
-        const ui = this.ui;
         for (let r = 0; r < 10; r++) {
             for (let c = 0; c < 10; c++) {
                 const cell = document.getElementById(`cell-${r}-${c}`);
@@ -2009,7 +2067,8 @@ class SequenceGame {
                                 moveType: 'exchange',
                                 drew: newCard !== null,
                                 nextTurn: this.myColor, // Still my turn
-                                cardName
+                                cardName,
+                                newHand: this.hand // Keep host's hand record in sync
                             });
                         }
 
@@ -2064,7 +2123,7 @@ class SequenceGame {
 
 
 
-    positionHintOverCard(hintEl, cardIndex, explicitText) {
+    positionHintOverCard() {
         /* Temporarily disabled per user request
         if (!hintEl) return;
         const ui = this.ui;
@@ -2456,7 +2515,7 @@ class SequenceGame {
         this.renderHand();
         this.updateTurnUI();
         this.updateJackHint();
-        ui.wipeActionPanel.style.display = 'none';
+        if (this.ui.wipeActionPanel) this.ui.wipeActionPanel.style.display = 'none';
         this.exitWipeSelectionMode();
 
         // Animate locally
@@ -2538,10 +2597,7 @@ class SequenceGame {
         const isFree = cellVal === 'FREE';
         const chip = this.chips[r][c];
 
-        let moveType = null;
-
-        let wipeAxis = null;
-        let wipeIndex = null;
+        let moveType;
 
         if (ONE_EYE.has(card)) {
             if (chip && chip !== this.myColor && !this.isChipInSequence(r, c, chip)) {
@@ -2659,16 +2715,18 @@ class SequenceGame {
     }
 
     applyOpponentMove(data, peerId) {
-        const { row, col, color, moveType, drew, cardName, nextTurn, newHand } = data;
+        const { row, col, color, moveType, drew, cardName, newHand } = data;
+
+        // Keep the local deck in sync with the mover's draws. The mover already
+        // shifted their own deck; every receiver must shift the same number of
+        // cards or decks drift apart and players draw duplicates.
+        const drawCount = moveType === 'wipe' ? (data.drewCount || 0) : (drew ? 1 : 0);
+        for (let i = 0; i < drawCount && this.deck.length > 0; i++) this.deck.shift();
 
         if (this.isHost && peerId) {
             const playerID = this.playerIDMap[peerId];
-            if (playerID && this.playerStates[playerID]) {
-                if (newHand) this.playerStates[playerID].hand = newHand;
-                else if (drew && this.deck.length > 0) {
-                    // Backwards compatibility if hand not sent
-                    this.deck.shift();
-                }
+            if (playerID && this.playerStates[playerID] && newHand) {
+                this.playerStates[playerID].hand = newHand;
             }
         }
 
@@ -2679,21 +2737,15 @@ class SequenceGame {
         }
 
         if (moveType === 'wipe') {
-            const { axis, index } = moveData;
+            const { axis, index } = data;
             const name = (this.colorNames && this.colorNames[color]) || color;
             this.log(`💥 ${name} used ${cardName} to WIPE ${axis === 'row' ? 'Row' : 'Col'} ${index + 1}!`);
-
-            // Replicate hand and animation
-            if (drewCount && !newHand && this.deck.length >= drewCount) {
-                for (let i = 0; i < drewCount; i++) this.deck.shift();
-            }
 
             this.animateAndApplyWipe(axis, index);
             return; // Turn continues after animation inside animateAndApplyWipe
         }
 
         if (moveType === 'exchange') {
-            if (drew && !newHand && this.deck.length > 0) this.deck.shift();
             const name = (this.colorNames && this.colorNames[color]) || color;
             this.log(`♻️ ${name} exchanged dead card: ${cardName}`);
             if (this.isHost) this.saveGameState();
@@ -2708,7 +2760,6 @@ class SequenceGame {
         }
 
         this.chips[row][col] = moveType === 'place' ? color : null;
-        if (drew && !newHand && this.deck.length > 0) this.deck.shift();
 
         const name = (this.colorNames && this.colorNames[color]) || color;
         const displayCard = cardName || `[${row},${col}]`;
@@ -3144,7 +3195,7 @@ class SequenceGame {
         return { seqs, max4, max3, max2 };
     }
 
-    isChipInSequence(r, c, color) {
+    isChipInSequence(r, c) {
         return this.sequenceGrid[r][c] === true;
     }
 
@@ -3152,7 +3203,6 @@ class SequenceGame {
     // UI HELPERS
     // ══════════════════════════════════════
     updateTurnUI() {
-        const ui = this.ui;
         if (!this.currentTurn) return;
         
         // Re-render the score UI to update the active badge highlight and scores

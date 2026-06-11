@@ -1,15 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 export default function CookieBanner() {
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const hasConsented = localStorage.getItem('vwj_cookie_consent');
-    if (!hasConsented) {
-      setIsVisible(true);
-    }
-  }, []);
+  const [isVisible, setIsVisible] = useState(
+    () => !localStorage.getItem('vwj_cookie_consent')
+  );
 
   const handleAccept = () => {
     localStorage.setItem('vwj_cookie_consent', 'true');
