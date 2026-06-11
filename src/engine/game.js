@@ -954,6 +954,14 @@ class SequenceGame {
             this.turnTimerLimit = data.turnTimerLimit || 0;
             this.turnStartTime = data.turnStartTime || Date.now();
             this.board = data.board || BOARD_LAYOUT;
+            // Guests don't hold real playerStates (hands stay host-side);
+            // build display-only entries so badges and turn timers render.
+            if (data.roster) {
+                this.playerStates = {};
+                data.roster.forEach((p, i) => {
+                    this.playerStates[`roster_${i}`] = { color: p.color, name: p.name, hand: [] };
+                });
+            }
             this.started = true;
             this.showGameScreen();
             sounds.playDeckShuffle();
@@ -1070,6 +1078,7 @@ class SequenceGame {
             deck: [...this.deck],
             myHand: state.hand,
             myColor: state.color,
+            roster: Object.values(this.playerStates).map(p => ({ color: p.color, name: p.name })),
             currentTurn: this.currentTurn,
             teamCount: this.teamCount,
             winTarget: this.winTarget,
@@ -1604,6 +1613,9 @@ class SequenceGame {
         this.currentTurn = colors[0];
         this.started = true;
 
+        // Roster (names + colors only) so guests can render player badges/timers
+        const roster = assignments.map(a => ({ color: a.color, name: a.name }));
+
         // Send to each peer
         assignments.forEach(a => {
             if (a.peerId) {
@@ -1612,6 +1624,7 @@ class SequenceGame {
                     deck: [...this.deck],
                     myHand: pState.hand,
                     myColor: pState.color,
+                    roster,
                     currentTurn: colors[0],
                     teamCount: this.teamCount,
                     winTarget: this.winTarget,
