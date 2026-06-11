@@ -27,7 +27,37 @@ export default function SetupScreen() {
                 <p id="setup-status">Connecting to network...</p>
                 <div id="invite-box" style={{ display: 'none' }}>
                     <p className="invite-label">Invite others using the following link:</p>
-                    <input id="invite-url" type="text" readOnly />
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', width: '100%' }}>
+                        <input id="invite-url" type="text" readOnly style={{ flex: 1 }} />
+                        <button 
+                            className="premium-button"
+                            style={{ padding: '10px 16px', fontSize: '0.85rem', whiteSpace: 'nowrap', flexShrink: 0 }}
+                            onClick={() => {
+                                const url = document.getElementById('invite-url').value;
+                                if (url) {
+                                    navigator.clipboard.writeText(url).then(() => {
+                                        const label = document.querySelector('.invite-label');
+                                        if (label) {
+                                            const orig = label.innerText;
+                                            label.innerText = '📋 Copied to clipboard!';
+                                            label.style.color = 'var(--primary)';
+                                            setTimeout(() => {
+                                                label.innerText = orig;
+                                                label.style.color = '';
+                                            }, 2000);
+                                        }
+                                    }).catch(() => {
+                                        // Fallback for older browsers
+                                        const input = document.getElementById('invite-url');
+                                        input.select();
+                                        document.execCommand('copy');
+                                    });
+                                }
+                            }}
+                        >
+                            Copy
+                        </button>
+                    </div>
                 </div>
             </div>
 

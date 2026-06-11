@@ -39,6 +39,7 @@ const TWO_EYE = new Set(['JD', 'JC']);
 const TEAM_COLORS = ['red', 'blue', 'green'];
 
 const PEER_CONFIG = {
+    debug: 2,
     config: {
         'iceServers': [
             { urls: 'stun:stun.l.google.com:19302' },
@@ -412,10 +413,11 @@ class SequenceGame {
 
         this.syncPlayers = () => {
             if (this.isHost) {
+                const peerId = this.peer ? this.peer.id : null;
                 this.broadcast('players_sync', {
                     hostName: this.myName,
                     peers: this.peers,
-                    allPeers: [this.peer.id, ...this.peers], // Include host as first in list
+                    allPeers: peerId ? [peerId, ...this.peers] : [...this.peers],
                     peerNames: this.peerNames
                 });
             }
@@ -778,6 +780,8 @@ class SequenceGame {
 
         this.peer.on('error', (err) => {
             const errStr = String(err);
+            console.error("PeerJS Error:", err.type, errStr);
+            
             if (err.type === 'peer-unavailable' || errStr.includes('Could not connect to peer')) {
                 console.log("Peer unavailable (expected during reconnection):", errStr);
                 if (!this.isHost) {
@@ -787,25 +791,35 @@ class SequenceGame {
                 return;
             }
 
-            console.error("PeerJS Network Error:", err);
+            if (err.type === 'identity-taken') {
+                clearTimeout(watchdog);
+                if (this.isHost && this.hostStateBackup && this._takeoverRetries < 5) {
+                    // Mid-game takeover retry
+                    this._takeoverRetries++;
+                    console.warn(`Takeover ID taken. Retry ${this._takeoverRetries}/5...`);
+                    ui.status.innerText = `Takeover retry ${this._takeoverRetries}...`;
+                    setTimeout(() => this.startSession(roomId, true), 2000);
+                } else if (this.isHost && !this.started) {
+                    // Fresh game creation — stale ID on server. Generate a new room ID.
+                    console.warn("Room ID taken (stale). Generating new room...");
+                    const newRoomId = genId(8);
+                    window.location.hash = newRoomId;
+                    localStorage.setItem('sequence_roomID', newRoomId);
+                    ui.status.innerText = "Retrying with new room...";
+                    setTimeout(() => this.startSession(newRoomId, true), 500);
+                } else {
+                    console.warn("Identity taken. Switching to client mode.");
+                    this.isHost = false;
+                    this._takeoverRetries = 0;
+                    ui.status.innerText = "Joining existing room...";
+                    setTimeout(() => this.startSession(roomId, false), 1000);
+                }
+                return;
+            }
+
             if (!this.isHost) {
                 ui.status.innerText = "Network error: " + err.type;
                 setTimeout(() => this.attemptReconnect(), 5000);
-            } else {
-                if (err.type === 'identity-taken') {
-                    if (this.isHost && this.hostStateBackup && this._takeoverRetries < 5) {
-                        this._takeoverRetries++;
-                        console.warn(`Takeover ID taken. Retry ${this._takeoverRetries}/5...`);
-                        ui.status.innerText = `Takeover retry ${this._takeoverRetries}...`;
-                        setTimeout(() => this.startSession(roomId, true), 2000);
-                    } else {
-                        console.warn("Identity taken. Switching/Reverting to client mode.");
-                        this.isHost = false;
-                        this._takeoverRetries = 0;
-                        ui.status.innerText = "Joining existing room...";
-                        setTimeout(() => this.startSession(roomId, false), 1000);
-                    }
-                }
             }
         });
     }
