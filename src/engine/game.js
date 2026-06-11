@@ -323,6 +323,7 @@ class SequenceGame {
         this.turnTimerLimit = 0;
         this.turnStartTime = 0;
         setInterval(() => this.tickTurnTimer(), 1000);
+        setInterval(() => this.heartbeat(), 5000);
 
         if (this.ui.muteBtn) {
             const muteIcon = document.getElementById('mute-icon');
@@ -642,6 +643,11 @@ class SequenceGame {
             if (document.visibilityState === 'visible' && !this.isHost) {
                 if (!this.hostConnection || !this.hostConnection.open) {
                     this.attemptReconnect();
+                } else if (this.started) {
+                    // iOS Safari kills WebRTC in background while conn.open stays true.
+                    // Pull a full state snapshot; if the host never answers, the
+                    // resync timeout will tear the connection down and reconnect.
+                    this.requestResync();
                 }
             }
         });
@@ -848,29 +854,22 @@ class SequenceGame {
 
                 // Check for reconnection
                 if (this.started && this.playerStates[playerID]) {
-                    const state = this.playerStates[playerID];
-                    state.peerId = peerId;
-                    this.sendTo(peerId, 'gameStart', {
-                        deck: [...this.deck],
-                        myHand: state.hand,
-                        myColor: state.color,
-                        currentTurn: this.currentTurn,
-                        teamCount: this.teamCount,
-                        winTarget: this.winTarget,
-                        colorNames: this.colorNames,
-                        hintsEnabled: this.hintsEnabled,
-                        boardLayoutMode: this.boardLayoutMode,
-                        board: this.board,
-                        boardChips: this.chips,
-                        sequences: this.sequences,
-                        sequenceGrid: this.sequenceGrid,
-                        lockedSequences: this.lockedSequences,
-                        lastMove: this.lastMove
-                    });
+                    this.sendFullStateTo(peerId, playerID);
                     this.log(`♻️ ${name} reconnected.`);
                 }
                 this.syncPlayers();
             }
+        } else if (type === 'resync') {
+            if (this.isHost && this.started) {
+                const playerID = this.playerIDMap[peerId];
+                if (playerID && this.playerStates[playerID]) {
+                    this.sendFullStateTo(peerId, playerID);
+                }
+            }
+        } else if (type === 'ping') {
+            if (this.isHost) this.sendTo(peerId, 'pong', null);
+        } else if (type === 'pong') {
+            this._lastPongTime = Date.now();
         } else if (type === 'chat') {
             const { msg, color } = data;
             this.showChatFloat(msg, color);
@@ -932,6 +931,7 @@ class SequenceGame {
                 }
             }
         } else if (type === 'gameStart') {
+            clearTimeout(this._resyncTimeout);
             this.chips = Array(10).fill(null).map(() => Array(10).fill(null));
             this.sequences = { red: 0, blue: 0, green: 0 };
             this.sequenceGrid = Array(10).fill(null).map(() => Array(10).fill(false));
@@ -1039,6 +1039,68 @@ class SequenceGame {
 
     }
 
+    // Full game snapshot for a (re)joining or resyncing player. Host only.
+    sendFullStateTo(peerId, playerID) {
+        const state = this.playerStates[playerID];
+        if (!state) return;
+        state.peerId = peerId;
+        this.sendTo(peerId, 'gameStart', {
+            deck: [...this.deck],
+            myHand: state.hand,
+            myColor: state.color,
+            currentTurn: this.currentTurn,
+            teamCount: this.teamCount,
+            winTarget: this.winTarget,
+            colorNames: this.colorNames,
+            hintsEnabled: this.hintsEnabled,
+            wipeEnabled: this.wipeEnabled,
+            boardLayoutMode: this.boardLayoutMode,
+            turnTimerLimit: this.turnTimerLimit,
+            turnStartTime: this.turnStartTime,
+            board: this.board,
+            boardChips: this.chips,
+            sequences: this.sequences,
+            sequenceGrid: this.sequenceGrid,
+            lockedSequences: this.lockedSequences,
+            lastMove: this.lastMove
+        });
+    }
+
+    // Client: ask host for a full state snapshot. If no gameStart arrives in time,
+    // the connection is presumed silently dead (common on iOS after backgrounding)
+    // and is torn down so the normal reconnect flow takes over.
+    requestResync() {
+        if (this.isHost || this.isSinglePlayer || !this.started) return;
+        if (!this.hostConnection || !this.hostConnection.open) {
+            this.attemptReconnect();
+            return;
+        }
+        this.hostConnection.send({ type: 'resync' });
+        clearTimeout(this._resyncTimeout);
+        this._resyncTimeout = setTimeout(() => {
+            console.warn("Resync timed out — connection presumed dead. Reconnecting...");
+            try { this.hostConnection.close(); } catch (e) { }
+            this.hostConnection = null;
+            this.attemptReconnect();
+        }, 4000);
+    }
+
+    // Client: periodic ping so a silently-dead data channel is detected
+    // even while the tab stays in the foreground.
+    heartbeat() {
+        if (this.isHost || this.isSinglePlayer || !this.started) return;
+        if (!this.hostConnection || !this.hostConnection.open) return;
+        if (this._lastPongTime && Date.now() - this._lastPongTime > 15000) {
+            console.warn("Heartbeat stale (no pong for 15s). Forcing reconnect...");
+            this._lastPongTime = null;
+            try { this.hostConnection.close(); } catch (e) { }
+            this.hostConnection = null;
+            this.attemptReconnect();
+            return;
+        }
+        this.hostConnection.send({ type: 'ping' });
+    }
+
     connectToHost(hostID) {
         if (!this.peer || this.peer.destroyed || this.peer.disconnected) return;
 
@@ -1063,6 +1125,7 @@ class SequenceGame {
             clearTimeout(handshakeTimeout);
             this._connectingToHost = false;
             this._reconnectAttempts = 0;
+            this._lastPongTime = Date.now();
             const warningEl = document.getElementById('host-dropped-warning');
             if (warningEl) warningEl.style.display = 'none';
         });
