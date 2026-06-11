@@ -925,6 +925,11 @@ class SequenceGame {
                 if (this.ui.wipeToggle) this.ui.wipeToggle.disabled = true;
                 if (this.ui.layoutDefaultBtn) this.ui.layoutDefaultBtn.disabled = true;
                 if (this.ui.layoutRandomBtn) this.ui.layoutRandomBtn.disabled = true;
+                const timerSlider = document.getElementById('turn-timer-slider');
+                if (timerSlider) {
+                    timerSlider.disabled = true;
+                    timerSlider.style.pointerEvents = 'none';
+                }
             }
         } else if (type === 'gameStart') {
             this.chips = Array(10).fill(null).map(() => Array(10).fill(null));
@@ -1307,7 +1312,19 @@ class SequenceGame {
         } else if (!this.isHost && this.hostConnection && this.hostConnection.open) {
             this.hostConnection.send({ type, data });
         }
+    }
 
+    sendMove(data) {
+        if (this.isHost) {
+            this.broadcast('move', data);
+        } else {
+            if (this.hostConnection && this.hostConnection.open) {
+                this.log(`🚀 Sending move to host...`);
+                this.hostConnection.send({ type: 'move', data });
+            } else {
+                this.log(`⚠ Cannot send move. Host connection is not open.`);
+            }
+        }
     }
 
     broadcast(type, data, excludePeerId = null) {
@@ -2444,8 +2461,14 @@ class SequenceGame {
             return;
         }
 
-        if (this.currentTurn !== this.myColor) return;
-        if (this.selectedCardIndex === null) return;
+        if (this.currentTurn !== this.myColor) {
+            this.log(`⚠ Not your turn! Current turn: ${this.currentTurn}, Your color: ${this.myColor}`);
+            return;
+        }
+        if (this.selectedCardIndex === null) {
+            this.log(`⚠ No card selected!`);
+            return;
+        }
 
         const card = this.hand[this.selectedCardIndex];
         const cellVal = this.board[r][c];
@@ -2453,6 +2476,7 @@ class SequenceGame {
         const chip = this.chips[r][c];
 
         let moveType = null;
+
         let wipeAxis = null;
         let wipeIndex = null;
 

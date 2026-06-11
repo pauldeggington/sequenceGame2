@@ -27,7 +27,7 @@ export default function CookieBanner() {
     <div className="glass-panel" style={bannerStyle}>
       <div style={contentStyle}>
         <p style={{ margin: 0, fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)', textAlign: 'center', lineHeight: '1.4' }}>
-          We use cookies to personalize content and ads, to provide social media features and to analyze our traffic. 
+          We use local storage to save your game state and preferences. We also use cookies via Google AdSense to personalize ads and analyze our traffic. 
           By making a choice, you consent to our use of cookies. <Link to="/privacy" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 'bold' }}>Read our Privacy Policy</Link>.
         </p>
         <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', marginTop: '10px' }}>
